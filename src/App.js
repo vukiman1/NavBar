@@ -8,8 +8,18 @@ import {
   SunOutlined,
   PieChartOutlined,
 } from "@ant-design/icons";
+import {
+  Button,
+  Layout,
+  Menu,
+  theme,
+  Breadcrumb,
+  Badge,
+  Avatar,
+  Typography,
+} from "antd";
+const { Text } = Typography;
 
-import { Button, Layout, Menu, theme, Breadcrumb, Badge, Avatar } from "antd";
 const { Header, Sider, Content } = Layout;
 const App = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -133,6 +143,9 @@ const App = () => {
               }}
             />
             <div>
+              <Text strong>
+                Xin chào <b>Kim An!</b>{" "}
+              </Text>
               <Badge count={1}>
                 <Avatar
                   shape="square"
