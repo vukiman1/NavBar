@@ -7,7 +7,7 @@ const { Header } = Layout;
 
 const HeaderBar = (currentTheme) => {
   const [collapsed, setCollapsed] = useState(false);
-
+  currentTheme = currentTheme.currentTheme;
   return (
     <div>
       <Header
