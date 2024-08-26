@@ -1,0 +1,6 @@
+.bar-chart {
+  background: transparent linear-gradient(62deg, #00369e, #005cfd 53%, #a18dff)
+    0 0 no-repeat padding-box;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.12156862745098039);
+  border-radius: 8px;
+}

@@ -4,6 +4,7 @@ import { Layout, Breadcrumb } from "antd";
 import HeaderBar from "./Admin/Header/Header";
 import AdminRouter from "./router/AdminRouter";
 import { DataContext } from "./Context/DataContext";
+import { NavLink } from "react-router-dom";
 
 const { Content } = Layout;
 const App = () => {
@@ -22,7 +23,9 @@ const App = () => {
             margin: "6px 0 0 16px",
           }}
         >
-          <Breadcrumb.Item>Home</Breadcrumb.Item>
+          <Breadcrumb.Item>
+            <NavLink to="/">Home</NavLink>
+          </Breadcrumb.Item>
           <Breadcrumb.Item>{breadcrumb}</Breadcrumb.Item>
         </Breadcrumb>
         <Content

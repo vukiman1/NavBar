@@ -22,7 +22,7 @@ const SideBar = () => {
       key: "1",
       icon: <PieChartOutlined />,
       label: "Dashboard",
-      children: [{ key: "11", label: "Option 1" }],
+      children: [{ key: "11", label: <NavLink to="/Home">Home</NavLink> }],
     },
     {
       key: "2",
