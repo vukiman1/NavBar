@@ -12,6 +12,7 @@ const AdminRouter = () => {
       <Route path="/users" element={<Users />} />
       <Route path="/home" element={<Home />} />
       <Route path="*" element={<NotFound />} />
+      <Route path="/" element={<Home />} />
     </Routes>
   );
 };

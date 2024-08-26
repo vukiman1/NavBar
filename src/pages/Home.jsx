@@ -19,10 +19,13 @@ import {
 } from "@ant-design/icons";
 import Echart from "../components/chart/EChart";
 import LineChart from "../components/chart/LineChart";
+import { useContext } from "react";
+import { DataContext } from "../Context/DataContext";
 
 function Home() {
   const { Title } = Typography;
-
+  const { setBreadcrumb } = useContext(DataContext);
+  setBreadcrumb("");
   const count = [
     {
       today: "Doanh số hôm nay",

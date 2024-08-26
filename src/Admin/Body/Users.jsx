@@ -1,30 +1,38 @@
 import React, { useRef, useState } from "react";
 import { SearchOutlined } from "@ant-design/icons";
-import { Button, Input, Space, Table } from "antd";
+import { Badge, Button, Divider, Input, Radio, Space, Table } from "antd";
 import Highlighter from "react-highlight-words";
 const data = [
   {
     key: "1",
     name: "John Brown",
     email: "a@example.com",
+    status: "Active",
     address: "New York No. 1 Lake Park",
+    phone: "0123445555",
   },
   {
     key: "2",
     name: "Joe Black",
     email: "b@example.com",
+    status: "Active",
+    phone: "0123445555",
     address: "London No. 1 Lake Park",
   },
   {
     key: "3",
     name: "Jim Green",
     email: "xc@example.com",
+    status: "Disabled",
+    phone: "0123445555",
     address: "Sydney No. 1 Lake Park",
   },
   {
     key: "4",
     name: "Jim Red",
     email: "d@example.com",
+    status: "Active",
+    phone: "0123445555",
     address: "London No. 2 Lake Park",
   },
 ];
@@ -145,7 +153,7 @@ const Users = () => {
   });
   const columns = [
     {
-      title: "Name",
+      title: "Tên",
       dataIndex: "name",
       key: "name",
       width: "30%",
@@ -156,17 +164,80 @@ const Users = () => {
       dataIndex: "email",
       key: "email",
       width: "20%",
-      ...getColumnSearchProps("email"),
     },
     {
-      title: "Address",
+      title: "Địa chỉ",
       dataIndex: "address",
       key: "address",
-      ...getColumnSearchProps("address"),
-      sorter: (a, b) => a.address.length - b.address.length,
-      sortDirections: ["descend", "ascend"],
+    },
+    {
+      title: "Số điện thoại",
+      dataIndex: "phone",
+      key: "phone",
+    },
+    {
+      title: "Tình trạng",
+      key: "status",
+      render: (text, record) => (
+        <>
+          {record.status === "Active" ? (
+            <>
+              <Badge status="success" text="Active" />
+            </>
+          ) : (
+            <Badge status="warning" text="Disabled" />
+          )}
+        </>
+      ),
+    },
+    {
+      title: "",
+      dataIndex: "",
+      key: "x",
+      render: () => (
+        <>
+          <a href="/">Edit</a>{" "}
+          <a href="/" style={{ color: "red", marginLeft: "6px" }}>
+            Delete
+          </a>
+        </>
+      ),
     },
   ];
-  return <Table columns={columns} dataSource={data} />;
+
+  const [selectionType, setSelectionType] = useState("checkbox");
+  const rowSelection = {
+    onChange: (selectedRowKeys, selectedRows) => {
+      console.log(
+        `selectedRowKeys: ${selectedRowKeys}`,
+        "selectedRows: ",
+        selectedRows
+      );
+    },
+  };
+
+  return (
+    <div>
+      <Radio.Group
+        onChange={({ target: { value } }) => {
+          setSelectionType(value);
+        }}
+        value={selectionType}
+      >
+        <Button status="danger">Delete</Button>
+      </Radio.Group>
+
+      <Divider />
+
+      <Table
+        rowSelection={{
+          type: "checkbox",
+          ...rowSelection,
+        }}
+        columns={columns}
+        dataSource={data}
+      />
+    </div>
+  );
 };
 export default Users;
