@@ -6,14 +6,17 @@ import {
   UserOutlined,
   PieChartOutlined,
 } from "@ant-design/icons";
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
+import { DataContext } from "../../Context/DataContext";
+import { NavLink } from "react-router-dom";
 const { Sider } = Layout;
 
-const SideBar = ({ sendCurrentTheme }) => {
+const SideBar = () => {
   const [collapsedWidth, setCollapsedWidth] = useState(0);
-  const [currentTheme, setCurrentTheme] = useState("light");
-  const [collapsed, setCollapsed] = useState(false);
-  console.log(currentTheme);
+
+  const { currentTheme, setCurrentTheme, themeStyle, collapsed, setCollapsed } =
+    useContext(DataContext);
+
   const items = [
     {
       key: "1",
@@ -24,12 +27,12 @@ const SideBar = ({ sendCurrentTheme }) => {
     {
       key: "2",
       icon: <UserOutlined />,
-      label: "Users",
+      label: <NavLink to="/users">Tài khoản</NavLink>,
     },
     {
       key: "3",
       icon: <DropboxOutlined />,
-      label: "Products",
+      label: <NavLink to="/products">Sản phẩm</NavLink>,
     },
   ];
   return (
@@ -54,7 +57,7 @@ const SideBar = ({ sendCurrentTheme }) => {
         <div className="demo-logo-vertical">
           <h1
             style={{
-              color: currentTheme === "dark" ? "#fff" : "#001529",
+              ...themeStyle,
               textAlign: "center",
             }}
           >
@@ -80,7 +83,6 @@ const SideBar = ({ sendCurrentTheme }) => {
             icon={currentTheme === "light" ? <MoonOutlined /> : <SunOutlined />}
             onClick={() => {
               setCurrentTheme(currentTheme === "light" ? "dark" : "light");
-              sendCurrentTheme(currentTheme === "light" ? "dark" : "light");
             }}
           ></Button>
         </div>

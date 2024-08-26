@@ -1,60 +1,38 @@
-import React, { useState } from "react";
+import React, { useContext } from "react";
 import SideBar from "./Admin/SideBar/SideBar";
-import { Layout, theme, Breadcrumb } from "antd";
+import { Layout, Breadcrumb } from "antd";
 import HeaderBar from "./Admin/Header/Header";
+import AdminRouter from "./router/AdminRouter";
+import { DataContext } from "./Context/DataContext";
+
 const { Content } = Layout;
 const App = () => {
-  const {
-    token: { colorBgContainer, borderRadiusLG },
-  } = theme.useToken();
-  const [currentTheme, setCurrentTheme] = useState("light");
-
-  const handleTheme = (theme) => {
-    console.log(theme);
-    setCurrentTheme(theme);
-  };
+  const { breadcrumb } = useContext(DataContext);
   return (
     <Layout
       style={{
         minHeight: "100vh",
       }}
     >
-      <SideBar sendCurrentTheme={handleTheme} />
+      <SideBar />
       <Layout>
-        <HeaderBar currentTheme={currentTheme} />
+        <HeaderBar />
         <Breadcrumb
           style={{
             margin: "6px 0 0 16px",
           }}
         >
           <Breadcrumb.Item>Home</Breadcrumb.Item>
-          <Breadcrumb.Item>List</Breadcrumb.Item>
-          <Breadcrumb.Item>App</Breadcrumb.Item>
+          <Breadcrumb.Item>{breadcrumb}</Breadcrumb.Item>
         </Breadcrumb>
         <Content
           style={{
             margin: "10px 16px",
             padding: "0 48px",
             minHeight: 280,
-            background: colorBgContainer,
-            borderRadius: borderRadiusLG,
           }}
         >
-          Content
-          {
-            // indicates very long content
-            Array.from(
-              {
-                length: 100,
-              },
-              (_, index) => (
-                <React.Fragment key={index}>
-                  {index % 20 === 0 && index ? "more" : "..."}
-                  <br />
-                </React.Fragment>
-              )
-            )
-          }
+          <AdminRouter />
         </Content>
       </Layout>
     </Layout>
