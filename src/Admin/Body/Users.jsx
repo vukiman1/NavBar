@@ -1,6 +1,6 @@
 import React, { useRef, useState } from "react";
 import { SearchOutlined } from "@ant-design/icons";
-import { Badge, Button, Divider, Input, Radio, Space, Table } from "antd";
+import { Badge, Button, Flex, Input, Space, Table } from "antd";
 import Highlighter from "react-highlight-words";
 const data = [
   {
@@ -205,39 +205,38 @@ const Users = () => {
     },
   ];
 
-  const [selectionType, setSelectionType] = useState("checkbox");
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const start = () => {
+    setLoading(true);
+    // ajax request after empty completing
+    setTimeout(() => {
+    console.log(data[selectedRowKeys].key)  
+    setSelectedRowKeys([]);  
+    setLoading(false);  
+    }, 1000);
+  };
+  const onSelectChange = (newSelectedRowKeys) => {
+    
+    console.log('selectedRowKeys changed: ', newSelectedRowKeys);
+    setSelectedRowKeys(newSelectedRowKeys);
+  };
   const rowSelection = {
-    onChange: (selectedRowKeys, selectedRows) => {
-      console.log(
-        `selectedRowKeys: ${selectedRowKeys}`,
-        "selectedRows: ",
-        selectedRows
-      );
-    },
+    selectedRowKeys,
+    onChange: onSelectChange,
   };
 
+  const hasSelected = selectedRowKeys.length > 0;
   return (
-    <div>
-      <Radio.Group
-        onChange={({ target: { value } }) => {
-          setSelectionType(value);
-        }}
-        value={selectionType}
-      >
-        <Button status="danger">Delete</Button>
-      </Radio.Group>
-
-      <Divider />
-
-      <Table
-        rowSelection={{
-          type: "checkbox",
-          ...rowSelection,
-        }}
-        columns={columns}
-        dataSource={data}
-      />
-    </div>
+    <Flex gap="middle" vertical>
+      {hasSelected  && <Flex align="center" gap="middle">
+        <Button type="primary" danger onClick={start} disabled={!hasSelected} loading={loading}>
+          Delete
+        </Button>
+        Selected ${selectedRowKeys.length} items
+      </Flex>}
+      <Table rowSelection={rowSelection} columns={columns} dataSource={data} />
+    </Flex>
   );
 };
 export default Users;
