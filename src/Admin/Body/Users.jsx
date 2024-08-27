@@ -1,10 +1,12 @@
-import React, { useRef, useState } from "react";
+import React, { useContext, useRef, useState } from "react";
 import { SearchOutlined } from "@ant-design/icons";
 import { Badge, Button, Flex, Input, Space, Table } from "antd";
 import Highlighter from "react-highlight-words";
+import { DataContext } from "../../Context/DataContext";
 const data = [
   {
     key: "1",
+    id: "1111",
     name: "John Brown",
     email: "a@example.com",
     status: "Active",
@@ -13,6 +15,7 @@ const data = [
   },
   {
     key: "2",
+    id: "1112",
     name: "Joe Black",
     email: "b@example.com",
     status: "Active",
@@ -21,6 +24,7 @@ const data = [
   },
   {
     key: "3",
+    id: "1113",
     name: "Jim Green",
     email: "xc@example.com",
     status: "Disabled",
@@ -29,6 +33,7 @@ const data = [
   },
   {
     key: "4",
+    id: "1114",
     name: "Jim Red",
     email: "d@example.com",
     status: "Active",
@@ -40,6 +45,8 @@ const Users = () => {
   const [searchText, setSearchText] = useState("");
   const [searchedColumn, setSearchedColumn] = useState("");
   const searchInput = useRef(null);
+  const { setBreadcrumb } = useContext(DataContext);
+  setBreadcrumb("Tài khoản");
   const handleSearch = (selectedKeys, confirm, dataIndex) => {
     confirm();
     setSearchText(selectedKeys[0]);
@@ -194,12 +201,13 @@ const Users = () => {
       title: "",
       dataIndex: "",
       key: "x",
-      render: () => (
+      render: (record) => (
         <>
-          <a href="/">Edit</a>{" "}
+          <a href="/">Edit </a>{" "}
           <a href="/" style={{ color: "red", marginLeft: "6px" }}>
             Delete
           </a>
+          {console.log(record)}
         </>
       ),
     },
@@ -211,14 +219,13 @@ const Users = () => {
     setLoading(true);
     // ajax request after empty completing
     setTimeout(() => {
-    console.log(data[selectedRowKeys].key)  
-    setSelectedRowKeys([]);  
-    setLoading(false);  
+      console.log(data[selectedRowKeys].key);
+      setSelectedRowKeys([]);
+      setLoading(false);
     }, 1000);
   };
   const onSelectChange = (newSelectedRowKeys) => {
-    
-    console.log('selectedRowKeys changed: ', newSelectedRowKeys);
+    console.log("selectedRowKeys changed: ", newSelectedRowKeys);
     setSelectedRowKeys(newSelectedRowKeys);
   };
   const rowSelection = {
@@ -229,12 +236,20 @@ const Users = () => {
   const hasSelected = selectedRowKeys.length > 0;
   return (
     <Flex gap="middle" vertical>
-      {hasSelected  && <Flex align="center" gap="middle">
-        <Button type="primary" danger onClick={start} disabled={!hasSelected} loading={loading}>
-          Delete
-        </Button>
-        Selected ${selectedRowKeys.length} items
-      </Flex>}
+      {hasSelected && (
+        <Flex align="center" gap="middle">
+          <Button
+            type="primary"
+            danger
+            onClick={start}
+            disabled={!hasSelected}
+            loading={loading}
+          >
+            Delete
+          </Button>
+          Selected ${selectedRowKeys.length} items
+        </Flex>
+      )}
       <Table rowSelection={rowSelection} columns={columns} dataSource={data} />
     </Flex>
   );
