@@ -1,6 +1,7 @@
 import React, { useContext, useRef, useState } from "react";
 import { SearchOutlined } from "@ant-design/icons";
 import {
+  Avatar,
   Badge,
   Button,
   Flex,
@@ -8,11 +9,15 @@ import {
   message,
   Popconfirm,
   Space,
+  Spin,
   Table,
 } from "antd";
 import Highlighter from "react-highlight-words";
 import { DataContext } from "../../Context/DataContext";
 import { Link } from "react-router-dom";
+import { BASE_URL } from "../../Config/config";
+import useFetch from "../../hooks/useFetch";
+
 const data = [
   {
     key: "1",
@@ -52,6 +57,9 @@ const data = [
   },
 ];
 const Users = () => {
+const { data: user, isLoading } = useFetch(`${BASE_URL}/users`);
+console.log(user, isLoading)
+
   const [searchText, setSearchText] = useState("");
   const [searchedColumn, setSearchedColumn] = useState("");
   const searchInput = useRef(null);
@@ -169,21 +177,45 @@ const Users = () => {
       ),
   });
 
-  const confirm = (e) => {
-    console.log(e);
-    message.success("Xoá thành công");
-  };
+
   const cancel = (e) => {
     console.log(e);
     message.error("Xoá thất bại");
   };
+
+  const deleteUser = async (id) => {
+    try {
+      const response = await fetch(`${BASE_URL}/users/${id}`, {
+        method: "DELETE"});
+      if (response.ok) {
+        message.success("Xóa thành công").then(() => {
+          window.location.reload();
+        });
+      }
+    } catch (error) {
+      console.error("Xóa thất bại:", error);
+    }
+  }
+
   const columns = [
     {
       title: "Tên",
       dataIndex: "name",
       key: "name",
-      width: "30%",
+      width: "10%",
       ...getColumnSearchProps("name"),
+    },
+    {
+      title: "Ảnh",
+      key: "avatar",
+      width: "10%",
+
+      render: ( record) => (
+        <>
+        <Avatar src={<img src={record.avatar} alt="avatar" />} />
+
+        </>
+      ),
     },
     {
       title: "Email",
@@ -204,9 +236,9 @@ const Users = () => {
     {
       title: "Tình trạng",
       key: "status",
-      render: (text, record) => (
+      render: ( record) => (
         <>
-          {record.status === "Active" ? (
+          {record.status === "active" ? (
             <>
               <Badge status="success" text="Active" />
             </>
@@ -226,7 +258,7 @@ const Users = () => {
           <Popconfirm
             title="Delete the task"
             description="Are you sure to delete this task?"
-            onConfirm={confirm}
+            onConfirm={() => deleteUser(record.id)} 
             onCancel={cancel}
             okText="Yes"
             cancelText="No"
@@ -277,7 +309,7 @@ const Users = () => {
           Đã chọn {selectedRowKeys.length} người dùng
         </Flex>
       )}
-      <Table rowSelection={rowSelection} columns={columns} dataSource={data} />
+      {!isLoading ? <Table rowSelection={rowSelection} columns={columns} dataSource={user} rowKey="id"  /> : <Spin size="large" />}
     </Flex>
   );
 };
