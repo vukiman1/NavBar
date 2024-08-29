@@ -1,8 +1,18 @@
 import React, { useContext, useRef, useState } from "react";
 import { SearchOutlined } from "@ant-design/icons";
-import { Badge, Button, Flex, Input, Space, Table } from "antd";
+import {
+  Badge,
+  Button,
+  Flex,
+  Input,
+  message,
+  Popconfirm,
+  Space,
+  Table,
+} from "antd";
 import Highlighter from "react-highlight-words";
 import { DataContext } from "../../Context/DataContext";
+import { Link } from "react-router-dom";
 const data = [
   {
     key: "1",
@@ -158,6 +168,15 @@ const Users = () => {
         text
       ),
   });
+
+  const confirm = (e) => {
+    console.log(e);
+    message.success("Xoá thành công");
+  };
+  const cancel = (e) => {
+    console.log(e);
+    message.error("Xoá thất bại");
+  };
   const columns = [
     {
       title: "Tên",
@@ -203,11 +222,19 @@ const Users = () => {
       key: "x",
       render: (record) => (
         <>
-          <a href="/">Edit </a>{" "}
-          <a href="/" style={{ color: "red", marginLeft: "6px" }}>
-            Delete
-          </a>
-          {console.log(record)}
+          <Link to={`/users/${record.id}`}>Edit</Link>
+          <Popconfirm
+            title="Delete the task"
+            description="Are you sure to delete this task?"
+            onConfirm={confirm}
+            onCancel={cancel}
+            okText="Yes"
+            cancelText="No"
+          >
+            <Button type="link" danger>
+              Delete
+            </Button>
+          </Popconfirm>
         </>
       ),
     },
@@ -215,7 +242,7 @@ const Users = () => {
 
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [loading, setLoading] = useState(false);
-  const start = () => {
+  const start = (e) => {
     setLoading(true);
     // ajax request after empty completing
     setTimeout(() => {
@@ -245,9 +272,9 @@ const Users = () => {
             disabled={!hasSelected}
             loading={loading}
           >
-            Delete
+            Xoá
           </Button>
-          Selected ${selectedRowKeys.length} items
+          Đã chọn {selectedRowKeys.length} người dùng
         </Flex>
       )}
       <Table rowSelection={rowSelection} columns={columns} dataSource={data} />

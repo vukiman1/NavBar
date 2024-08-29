@@ -26,7 +26,15 @@ const App = () => {
           <Breadcrumb.Item>
             <NavLink to="/">Home</NavLink>
           </Breadcrumb.Item>
-          <Breadcrumb.Item>{breadcrumb}</Breadcrumb.Item>
+          <Breadcrumb.Item>
+            {breadcrumb === "Tài khoản" ? (
+              <NavLink to="/users">Tài khoản</NavLink>
+            ) : breadcrumb === "Sản phẩm" ? (
+              <NavLink to="/products">Sản phẩm</NavLink>
+            ) : (
+              ""
+            )}
+          </Breadcrumb.Item>
         </Breadcrumb>
         <Content
           style={{
