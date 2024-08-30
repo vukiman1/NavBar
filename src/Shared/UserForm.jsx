@@ -36,32 +36,33 @@ const tailFormItemLayout = {
 };
 const UserForm = () => {
   const [form] = Form.useForm();
-  const onFinish = async (values) => {
-    console.log("Received values of form: ", values);
-    // try {
-    //   const values = await form.validateFields();
-    //   console.log(values);
+  const onFinish = async () => {
+    try {
+      // Validate form fields
+      const values = await form.validateFields();
+      console.log("Received values of form: ", values);
+  
+      // Send request
+      const response = await fetch(`${BASE_URL}`, {
+        method: "POST", // Use string for method
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(values),
+      });
+  
+      // Check response
+      if (response.ok) {
 
-    //   const response = await fetch(`${BASE_URL}`, {
-    //     method: POST,
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //     },
-    //     credentials: "include",
-    //     body: JSON.stringify(values),
-    //   });
+      } else {
 
-    //   if (response.ok) {
-    //     message.success(`User ${user ? "updated" : "created"} successfully`);
-    //     setTimeout(() => {
-    //       window.location.reload();
-    //     }, 500);
-    //     onOk(); // Close the modal on successful update or creation
-    //   }
-    // } catch (error) {
-    //   console.error(`Failed to ${user ? "update" : "create"} user:`, error);
-    // }
+      }
+    } catch (error) {
+
+    }
   };
+  
 
   return (
     <Form
