@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, Flex, Form, Input, Select } from "antd";
+import { Button, Flex, Form, Input, message, Select } from "antd";
 import { Link } from "react-router-dom";
 import { BASE_URL } from "../Config/config";
 const { Option } = Select;
@@ -43,23 +43,20 @@ const UserForm = () => {
       console.log("Received values of form: ", values);
   
       // Send request
-      const response = await fetch(`${BASE_URL}`, {
+      const response = await fetch(`${BASE_URL}/users`, {
         method: "POST", // Use string for method
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
         body: JSON.stringify(values),
       });
   
       // Check response
       if (response.ok) {
-
-      } else {
-
+        message.success("Tạo thành công").then(() => {
+          window.location.reload();
+        });
       }
     } catch (error) {
-
+      console.error("Tạo thất bại:", error);
+      message.danger("Tạo thất bại")
     }
   };
   
