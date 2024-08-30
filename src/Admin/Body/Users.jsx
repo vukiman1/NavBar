@@ -1,5 +1,5 @@
-import React, { useContext, useRef, useState } from "react";
-import { SearchOutlined } from "@ant-design/icons";
+import React, { useRef, useState } from "react";
+import { SearchOutlined, UserAddOutlined } from "@ant-design/icons";
 import {
   Avatar,
   Badge,
@@ -13,58 +13,19 @@ import {
   Table,
 } from "antd";
 import Highlighter from "react-highlight-words";
-import { DataContext } from "../../Context/DataContext";
+
 import { Link } from "react-router-dom";
 import { BASE_URL } from "../../Config/config";
 import useFetch from "../../hooks/useFetch";
 
-const data = [
-  {
-    key: "1",
-    id: "1111",
-    name: "John Brown",
-    email: "a@example.com",
-    status: "Active",
-    address: "New York No. 1 Lake Park",
-    phone: "0123445555",
-  },
-  {
-    key: "2",
-    id: "1112",
-    name: "Joe Black",
-    email: "b@example.com",
-    status: "Active",
-    phone: "0123445555",
-    address: "London No. 1 Lake Park",
-  },
-  {
-    key: "3",
-    id: "1113",
-    name: "Jim Green",
-    email: "xc@example.com",
-    status: "Disabled",
-    phone: "0123445555",
-    address: "Sydney No. 1 Lake Park",
-  },
-  {
-    key: "4",
-    id: "1114",
-    name: "Jim Red",
-    email: "d@example.com",
-    status: "Active",
-    phone: "0123445555",
-    address: "London No. 2 Lake Park",
-  },
-];
 const Users = () => {
-const { data: user, isLoading } = useFetch(`${BASE_URL}/users`);
-console.log(user, isLoading)
+  const { data: user, isLoading } = useFetch(`${BASE_URL}/users`);
+  console.log(user, isLoading);
 
   const [searchText, setSearchText] = useState("");
   const [searchedColumn, setSearchedColumn] = useState("");
   const searchInput = useRef(null);
-  const { setBreadcrumb } = useContext(DataContext);
-  setBreadcrumb("Tài khoản");
+
   const handleSearch = (selectedKeys, confirm, dataIndex) => {
     confirm();
     setSearchText(selectedKeys[0]);
@@ -177,16 +138,16 @@ console.log(user, isLoading)
       ),
   });
 
-
   const cancel = (e) => {
     console.log(e);
     message.error("Xoá thất bại");
   };
 
-  const deleteUser = async (id) => {
+  const handleDeleteUser = async (id) => {
     try {
       const response = await fetch(`${BASE_URL}/users/${id}`, {
-        method: "DELETE"});
+        method: "DELETE",
+      });
       if (response.ok) {
         message.success("Xóa thành công").then(() => {
           window.location.reload();
@@ -195,7 +156,7 @@ console.log(user, isLoading)
     } catch (error) {
       console.error("Xóa thất bại:", error);
     }
-  }
+  };
 
   const columns = [
     {
@@ -210,10 +171,9 @@ console.log(user, isLoading)
       key: "avatar",
       width: "10%",
 
-      render: ( record) => (
+      render: (record) => (
         <>
-        <Avatar src={<img src={record.avatar} alt="avatar" />} />
-
+          <Avatar src={<img src={record.avatar} alt="avatar" />} />
         </>
       ),
     },
@@ -236,7 +196,7 @@ console.log(user, isLoading)
     {
       title: "Tình trạng",
       key: "status",
-      render: ( record) => (
+      render: (record) => (
         <>
           {record.status === "active" ? (
             <>
@@ -254,17 +214,17 @@ console.log(user, isLoading)
       key: "x",
       render: (record) => (
         <>
-          <Link to={`/users/${record.id}`}>Edit</Link>
+          <Link to={`/users/edit/${record.name}`}>Sửa</Link>
           <Popconfirm
-            title="Delete the task"
-            description="Are you sure to delete this task?"
-            onConfirm={() => deleteUser(record.id)} 
+            title="Xoá tài khoản"
+            description="Xác nhận xoá tài khoản này?"
+            onConfirm={() => handleDeleteUser(record.id)}
             onCancel={cancel}
-            okText="Yes"
-            cancelText="No"
+            okText="Xoá"
+            cancelText="Bỏ"
           >
             <Button type="link" danger>
-              Delete
+              Xoá
             </Button>
           </Popconfirm>
         </>
@@ -278,7 +238,6 @@ console.log(user, isLoading)
     setLoading(true);
     // ajax request after empty completing
     setTimeout(() => {
-      console.log(data[selectedRowKeys].key);
       setSelectedRowKeys([]);
       setLoading(false);
     }, 1000);
@@ -295,21 +254,39 @@ console.log(user, isLoading)
   const hasSelected = selectedRowKeys.length > 0;
   return (
     <Flex gap="middle" vertical>
-      {hasSelected && (
-        <Flex align="center" gap="middle">
-          <Button
-            type="primary"
-            danger
-            onClick={start}
-            disabled={!hasSelected}
-            loading={loading}
-          >
-            Xoá
-          </Button>
-          Đã chọn {selectedRowKeys.length} người dùng
-        </Flex>
+      <Flex align="center" gap="middle" justify="space-between">
+        <Button type="primary">
+          <Link to="/users/add">
+            Thêm mới <UserAddOutlined />
+          </Link>
+        </Button>
+        {hasSelected && (
+          <div>
+            <Button
+              type="primary"
+              danger
+              onClick={start}
+              disabled={!hasSelected}
+              loading={loading}
+            >
+              Xoá
+            </Button>
+            {"  "}
+            Đã chọn {selectedRowKeys.length} người dùng
+          </div>
+        )}
+      </Flex>
+
+      {!isLoading ? (
+        <Table
+          rowSelection={rowSelection}
+          columns={columns}
+          dataSource={user}
+          rowKey="id"
+        />
+      ) : (
+        <Spin size="large" />
       )}
-      {!isLoading ? <Table rowSelection={rowSelection} columns={columns} dataSource={user} rowKey="id"  /> : <Spin size="large" />}
     </Flex>
   );
 };
