@@ -1,9 +1,8 @@
-import React, { useContext } from "react";
+import React from "react";
 import SideBar from "./Admin/SideBar/SideBar";
-import { Layout, Breadcrumb } from "antd";
+import { Layout} from "antd";
 import HeaderBar from "./Admin/Header/Header";
 import AdminRouter from "./router/AdminRouter";
-import { DataContext } from "./Context/DataContext";
 import BreadCrumb from "./Shared/BreadCrumb";
 
 const { Content } = Layout;

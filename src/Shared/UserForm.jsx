@@ -1,6 +1,7 @@
 import React from "react";
-import { Button, Form, Input, Select } from "antd";
+import { Button, Flex, Form, Input, Select } from "antd";
 import { Link } from "react-router-dom";
+import { BASE_URL } from "../Config/config";
 const { Option } = Select;
 
 const formItemLayout = {
@@ -35,27 +36,37 @@ const tailFormItemLayout = {
 };
 const UserForm = () => {
   const [form] = Form.useForm();
-  const onFinish = (values) => {
+  const onFinish = async (values) => {
     console.log("Received values of form: ", values);
+    // try {
+    //   const values = await form.validateFields();
+    //   console.log(values);
+
+    //   const response = await fetch(`${BASE_URL}`, {
+    //     method: POST,
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //     },
+    //     credentials: "include",
+    //     body: JSON.stringify(values),
+    //   });
+
+    //   if (response.ok) {
+    //     message.success(`User ${user ? "updated" : "created"} successfully`);
+    //     setTimeout(() => {
+    //       window.location.reload();
+    //     }, 500);
+    //     onOk(); // Close the modal on successful update or creation
+    //   }
+    // } catch (error) {
+    //   console.error(`Failed to ${user ? "update" : "create"} user:`, error);
+    // }
   };
-  const prefixSelector = (
-    <Form.Item name="prefix" noStyle>
-      <Select
-        style={{
-          width: 70,
-        }}
-      >
-        <Option value="84">+84</Option>
-        <Option value="1">+1</Option>
-      </Select>
-    </Form.Item>
-  );
 
   return (
     <Form
       {...formItemLayout}
       form={form}
-      name="register"
       onFinish={onFinish}
       initialValues={{
         residence: ["zhejiang", "hangzhou", "xihu"],
@@ -117,16 +128,12 @@ const UserForm = () => {
         rules={[
           {
             required: true,
-            message: "Bạn chưa nhập số điện thoại!",
+            message: "Bạn chưa điền số điện thoại!",
+            whitespace: true,
           },
         ]}
       >
-        <Input
-          addonBefore={prefixSelector}
-          style={{
-            width: "100%",
-          }}
-        />
+        <Input />
       </Form.Item>
 
       <Form.Item
@@ -139,7 +146,7 @@ const UserForm = () => {
           },
         ]}
       >
-        <Select placeholder="select your gender">
+        <Select placeholder="Chọn giới tính">
           <Option value="male">Nam</Option>
           <Option value="female">Nữ</Option>
           <Option value="other">khác</Option>
@@ -197,12 +204,15 @@ const UserForm = () => {
         <Input.Password />
       </Form.Item>
       <Form.Item {...tailFormItemLayout}>
+      <Flex justify="space-evenly">
+
         <Button type="primary" htmlType="submit">
-          Tạo mới
+         + Tạo mới
         </Button>
         <Button type="primary" danger>
-          <Link to="/users">Quay lại</Link>
+          <Link to="/users">- Quay lại</Link>
         </Button>
+        </Flex>
       </Form.Item>
     </Form>
   );
