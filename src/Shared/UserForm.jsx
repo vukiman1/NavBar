@@ -40,18 +40,24 @@ const UserForm = () => {
     try {
       // Validate form fields
       const values = await form.validateFields();
-      console.log("Received values of form: ", values);
-  
+      values.status = 'active'
+      values.id = Math.random().toString(36).substr(2, 9)
+      delete values.confirm;
+      console.log("Received values of form: ", values);   
       // Send request
       const response = await fetch(`${BASE_URL}/users`, {
         method: "POST", // Use string for method
+        headers: {
+          Accept: 'application/json',
+                  'Content-Type': 'application/json',
+      },
         body: JSON.stringify(values),
       });
-  
+      
       // Check response
       if (response.ok) {
         message.success("Tạo thành công").then(() => {
-          window.location.reload();
+          // window.location.reload();
         });
       }
     } catch (error) {
