@@ -14,6 +14,7 @@ const useFetch = (url) => {
           setError("Lỗi kết nối đến csdl!");
         }
         const result = await res.json();
+
         setData(result);
 
         setIsLoading(false);

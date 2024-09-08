@@ -5,20 +5,20 @@ import { NavLink, useLocation } from "react-router-dom";
 const BreadCrumb = () => {
   const location = useLocation();
 
-  let breadcrumb = "";
-  let breadcrumb2 = "";
+  let breadcrumb2 = location.pathname.includes("/edit")
+    ? "Chỉnh sửa"
+    : location.pathname.includes("/add")
+    ? "Thêm mới"
+    : "";
 
-  if (location.pathname.includes("/edit")) {
-    breadcrumb2 = "Chỉnh sửa";
-  } else if (location.pathname.includes("/add")) {
-    breadcrumb2 = "Thêm mới";
-  }
+  let breadcrumb = location.pathname.includes("/products")
+    ? "Sản phẩm"
+    : location.pathname.includes("/users")
+    ? "Tài khoản"
+    : location.pathname.includes("/info")
+    ? "Thông tin"
+    : "";
 
-  if (location.pathname.includes("/products")) {
-    breadcrumb = "Sản phẩm";
-  } else if (location.pathname.includes("/users")) {
-    breadcrumb = "Tài khoản";
-  }
   return (
     <Breadcrumb style={{ margin: "6px 0 0 16px" }}>
       <Breadcrumb.Item>
@@ -27,7 +27,17 @@ const BreadCrumb = () => {
 
       {breadcrumb !== "" ? (
         <Breadcrumb.Item>
-          <NavLink to={breadcrumb === "Sản phẩm" ? "/products" : "/users"}>
+          <NavLink
+            to={
+              breadcrumb === "Sản phẩm"
+                ? "/products"
+                : breadcrumb === "Người dùng"
+                ? "/users"
+                : breadcrumb === "Thông tin"
+                ? "/info"
+                : "/"
+            }
+          >
             {breadcrumb}
           </NavLink>
         </Breadcrumb.Item>

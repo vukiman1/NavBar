@@ -15,7 +15,7 @@ function Home() {
     {
       today: "Doanh số hôm nay",
       title: "50.000vnđ",
-      persent: "+30%",
+      // persent: "+30%",
       icon: <DollarTwoTone style={{ fontSize: "46px" }} />,
       bnb: "bnb2",
     },

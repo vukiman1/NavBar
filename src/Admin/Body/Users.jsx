@@ -1,4 +1,5 @@
 import React, { useRef, useState } from "react";
+
 import { SearchOutlined, UserAddOutlined } from "@ant-design/icons";
 import {
   Avatar,
@@ -20,7 +21,6 @@ import useFetch from "../../hooks/useFetch";
 
 const Users = () => {
   const { data: user, isLoading } = useFetch(`${BASE_URL}/users`);
-  console.log(user, isLoading);
 
   const [searchText, setSearchText] = useState("");
   const [searchedColumn, setSearchedColumn] = useState("");
@@ -149,9 +149,10 @@ const Users = () => {
         method: "DELETE",
       });
       if (response.ok) {
-        message.success("Xóa thành công").then(() => {
+        message.success("Xóa thành công");
+        setTimeout(() => {
           window.location.reload();
-        });
+        }, 600);
       }
     } catch (error) {
       console.error("Xóa thất bại:", error);
@@ -173,7 +174,18 @@ const Users = () => {
 
       render: (record) => (
         <>
-          <Avatar src={<img src={record.avatar} alt="avatar" />} />
+          {record.avatar !== "" ? (
+            <Avatar src={record.avatar} alt="avatar" />
+          ) : (
+            <Avatar
+              style={{
+                backgroundColor: "#fde3cf",
+                color: "#f56a00",
+              }}
+            >
+              {record.name.trim().charAt(0)}
+            </Avatar>
+          )}
         </>
       ),
     },
@@ -214,7 +226,7 @@ const Users = () => {
       key: "x",
       render: (record) => (
         <>
-          <Link to={`/users/edit/${record.name}`}>Sửa</Link>
+          <Link to={`/users/edit/${record.id}`}>Sửa</Link>
           <Popconfirm
             title="Xoá tài khoản"
             description="Xác nhận xoá tài khoản này?"
