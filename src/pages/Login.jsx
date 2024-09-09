@@ -1,5 +1,15 @@
-import React from "react";
-import { Button, Checkbox, Col, Flex, Form, Input, Row } from "antd";
+import React, { useState } from "react";
+import {
+  Alert,
+  Button,
+  Checkbox,
+  Col,
+  Flex,
+  Form,
+  Input,
+  message,
+  Row,
+} from "antd";
 import { LockOutlined, MailOutlined } from "@ant-design/icons";
 import backgroundImg from "../Assets/images/img.jpg";
 import { Link, useNavigate } from "react-router-dom";
@@ -8,19 +18,24 @@ import { BASE_URL } from "../Config/config";
 const Login = () => {
   const navigate = useNavigate();
   const { data: user } = useFetch(`${BASE_URL}/users`);
+  const [checkErr, setCheckErr] = useState(false);
 
   const onFinish = (values) => {
     console.log("Received values of form: ", values);
+
     user.forEach((user) => {
       console.log(user);
       if (
         user.email === values.email &&
-        // user.password === values.password &&
-        user.role === "admin"
+        user.passWord === values.passWord &&
+        user.status === "active"
       ) {
-        console.log(user);
-        localStorage.setItem("token", user.token);
-        navigate("/");
+        localStorage.setItem("user", JSON.stringify(user));
+        setCheckErr(false);
+
+        message.success("Đăng nhập thành công").then(() => {
+          navigate("/");
+        });
       }
     });
   };
@@ -58,6 +73,14 @@ const Login = () => {
               <p style={{ color: "white", margin: "3px 0 20px" }}>
                 Đăng nhập vào trang quản lý
               </p>
+              {checkErr && (
+                <Alert
+                  message="Sai email hoặc mật khẩu, vui lòng nhập lại!"
+                  type="error"
+                  style={{ marginBottom: "10px" }}
+                  showIcon
+                />
+              )}
             </Col>
           </Row>
           <Row justify="center">

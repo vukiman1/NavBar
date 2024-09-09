@@ -7,9 +7,13 @@ import {
 } from "@ant-design/icons";
 import Echart from "../components/chart/EChart";
 import LineChart from "../components/chart/LineChart";
+import useFetch from "../hooks/useFetch";
+import { BASE_URL } from "../Config/config";
 
 function Home() {
   const { Title } = Typography;
+  const { data: products } = useFetch(`${BASE_URL}/products`);
+  const { data: users } = useFetch(`${BASE_URL}/users`);
 
   const count = [
     {
@@ -21,7 +25,7 @@ function Home() {
     },
     {
       today: "Người dùng mới",
-      title: "2",
+      title: users.length,
       persent: "+20%",
       icon: <UserAddOutlined style={{ fontSize: "46px", color: "#1677ff" }} />,
       bnb: "bnb2",
@@ -35,7 +39,7 @@ function Home() {
     },
     {
       today: "Tổng số sản phẩm",
-      title: "100",
+      title: products.length,
       icon: <ShopTwoTone style={{ fontSize: "46px" }} />,
       bnb: "bnb2",
     },

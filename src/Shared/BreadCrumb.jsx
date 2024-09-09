@@ -35,7 +35,7 @@ const BreadCrumb = () => {
                 ? "/users"
                 : breadcrumb === "Thông tin"
                 ? "/info"
-                : "/"
+                : "/users"
             }
           >
             {breadcrumb}

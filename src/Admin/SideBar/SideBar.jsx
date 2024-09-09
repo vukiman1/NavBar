@@ -5,6 +5,7 @@ import {
   DropboxOutlined,
   UserOutlined,
   PieChartOutlined,
+  ReconciliationOutlined,
 } from "@ant-design/icons";
 import React, { useContext, useState } from "react";
 import { DataContext } from "../../Context/DataContext";
@@ -32,6 +33,11 @@ const SideBar = () => {
       key: "3",
       icon: <DropboxOutlined />,
       label: <NavLink to="/products">Sản phẩm</NavLink>,
+    },
+    {
+      key: "4",
+      icon: <ReconciliationOutlined />,
+      label: <NavLink to="/revenue">Đơn hàng</NavLink>,
     },
   ];
 

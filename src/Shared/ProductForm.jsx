@@ -1,5 +1,15 @@
 import React, { useState } from "react";
-import { Button, Form, Input, message, Select, Row, Col, Upload } from "antd";
+import {
+  Button,
+  Form,
+  Input,
+  message,
+  Select,
+  Row,
+  Col,
+  Upload,
+  InputNumber,
+} from "antd";
 import { storage } from "../firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { Link, useNavigate } from "react-router-dom";
@@ -38,34 +48,35 @@ const tailFormItemLayout = {
   },
 };
 
-const UserForm = (props) => {
+const ProductForm = (props) => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
+  console.log(props);
 
+  const { product = { id: v4(), status: "active" } } = props;
   const [imageUpload, setImageUpload] = useState(
-    "https://img.freepik.com/free-psd/3d-illustration-human-avatar-profile_23-2150671142.jpg?size=338&ext=jpg&ga=GA1.1.1413502914.1720105200&semt=sph"
+    product.imageUrl ||
+      "https://img.freepik.com/free-psd/3d-illustration-human-avatar-profile_23-2150671142.jpg?size=338&ext=jpg&ga=GA1.1.1413502914.1720105200&semt=sph"
   );
-  const { user = { id: v4(), status: "active", role: "user" } } = props;
-  console.log(Object.keys(user).length);
+  console.log(Object.keys(product).length);
   const onFinish = async () => {
     try {
       // Validate form fields
       const values = await form.validateFields();
 
-      values.id = user.id;
-      values.avatar = imageUpload;
-
+      values.id = product.id;
+      values.imageUrl = imageUpload;
+      console.log(values);
       let response;
       let url = "";
       let method = "";
-      if (Object.keys(user).length === 3) {
-        url = `${BASE_URL}/users`;
+      if (Object.keys(product).length === 2) {
+        url = `${BASE_URL}/products`;
         method = "POST";
         delete values.confirm;
       } else {
-        url = `${BASE_URL}/users/${user.id}`;
+        url = `${BASE_URL}/products/${product.id}`;
         method = "PUT";
-        values.avatar = user.avatar;
       }
 
       response = await fetch(url, {
@@ -79,10 +90,12 @@ const UserForm = (props) => {
 
       if (response.ok) {
         message.success(
-          Object.keys(user).length === 3 ? "Tạo thành công" : "Sửa thành công"
+          Object.keys(product).length === 2
+            ? "Tạo thành công"
+            : "Sửa thành công"
         );
         setTimeout(() => {
-          navigate("/users");
+          navigate("/products");
         }, 1000);
       } else {
         throw new Error("Đã xảy ra lỗi khi gửi yêu cầu");
@@ -95,7 +108,7 @@ const UserForm = (props) => {
 
   const handleChange = (info) => {
     info.file.status = "uploading";
-    console.log(user.id);
+    console.log(product.id);
 
     const file = info.file.originFileObj;
 
@@ -136,7 +149,7 @@ const UserForm = (props) => {
 
         // Chuyển canvas thành Blob để upload
         canvas.toBlob((blob) => {
-          const imageRef = ref(storage, `Avatar/${user.id}`);
+          const imageRef = ref(storage, `Products/${product.id}`);
           uploadBytes(imageRef, blob).then(() => {
             // Upload thành công, lấy URL của ảnh
             getDownloadURL(imageRef).then((url) => {
@@ -158,17 +171,17 @@ const UserForm = (props) => {
       style={{
         maxWidth: 600,
       }}
-      initialValues={user}
+      initialValues={product}
       scrollToFirstError
     >
       <Form.Item
         name="name"
-        label="Tên"
-        tooltip="Tên hiển thị của bạn?"
+        label="Tên Sản Phẩm"
+        tooltip="Tên sản phẩm?"
         rules={[
           {
             required: true,
-            message: "Bạn chưa nhập tên!",
+            message: "Bạn chưa nhập tên sản phẩm!",
             whitespace: true,
           },
         ]}
@@ -176,146 +189,96 @@ const UserForm = (props) => {
         <Input />
       </Form.Item>
       <Form.Item
-        name="avatar"
-        label="Ảnh đại diện"
+        name="imageUrl"
+        label="Ảnh sản phẩm"
         tooltip="Điền link ảnh vào đây!"
       >
         <Upload onChange={handleChange} maxCount={1} listType="picture">
-          <Button>Chọn ảnh đại diện</Button>
+          <Button>Chọn ảnh sản phẩm</Button>
         </Upload>
       </Form.Item>
       <Form.Item
-        name="email"
-        label="E-mail"
+        name="price"
+        label="Giá sản phẩm"
         rules={[
           {
-            type: "email",
-            message: "Không đúng định dạng email!",
-          },
-          {
             required: true,
-            message: "Bạn chưa nhập E-mail!",
+            message: "Bạn chưa nhập giá sản phẩm!",
           },
         ]}
       >
-        <Input />
+        <InputNumber />
       </Form.Item>
 
       <Form.Item
-        name="phone"
-        label="Số điện thoại"
+        name="quantity"
+        label="Tồn kho"
         rules={[
           {
             required: true,
-            message: "Bạn chưa điền số điện thoại!",
-            whitespace: true,
+            message: "Bạn chưa điền số lượng tồn kho!",
           },
         ]}
       >
-        <Input />
+        <InputNumber />
       </Form.Item>
 
-      <Form.Item
-        name="gender"
-        label="Giới tính"
-        rules={[
-          {
-            required: true,
-            message: "Bạn chưa nhập giới tính!",
-          },
-        ]}
-      >
-        <Select placeholder="Chọn giới tính">
-          <Option value="male">Nam</Option>
-          <Option value="female">Nữ</Option>
-          <Option value="other">Khác</Option>
-        </Select>
-      </Form.Item>
-
-      {Object.keys(user).length === 3 ? null : (
+      {Object.keys(product).length === 2 ? null : (
         <>
           <Form.Item name="status" label="Trạng thái">
             <Select placeholder="Chọn trạng thái">
               <Option value="active" style={{ color: "green" }}>
-                Hoạt động
+                Đang bán
               </Option>
               <Option value="inactive" style={{ color: "red" }}>
-                Khoá
+                Ẩn
               </Option>
-            </Select>
-          </Form.Item>
-          <Form.Item name="rule" label="Quyền quản trị">
-            <Select placeholder="Chọn quyền quản trị">
-              <Option value="admin">Người quản trị</Option>
-              <Option value="user">Người dùng</Option>
             </Select>
           </Form.Item>
         </>
       )}
 
       <Form.Item
-        name="address"
-        label="Địa chỉ"
+        name="category"
+        label="Loại hàng"
         rules={[
           {
             required: true,
-            message: "Bạn chưa điền địa chỉ!",
+            message: "Bạn chưa chọn loại hàngh!",
+          },
+        ]}
+      >
+        <Select placeholder="Chọn loại hàng">
+          <Option value="shoes">Giày dép</Option>
+          <Option value="technology">Điện tử</Option>
+          <Option value="other">Khác</Option>
+        </Select>
+      </Form.Item>
+
+      <Form.Item
+        name="description"
+        label="Mô tả sản phẩm"
+        rules={[
+          {
+            required: true,
+            message: "Bạn chưa điền mô tả!",
             whitespace: true,
           },
         ]}
       >
         <Input />
       </Form.Item>
-      <Form.Item
-        name="passWord"
-        label="Mật khẩu"
-        rules={[
-          {
-            required: true,
-            message: "Bạn chưa nhập mật khẩu!",
-          },
-        ]}
-        hasFeedback
-      >
-        <Input.Password />
-      </Form.Item>
-      {Object.keys(user).length === 3 ? (
-        <Form.Item
-          name="confirm"
-          label="Nhập lại mật khẩu"
-          dependencies={["passWord"]}
-          hasFeedback
-          rules={[
-            {
-              required: true,
-              message: "Chưa nhập lại mật khẩu!",
-            },
-            ({ getFieldValue }) => ({
-              validator(_, value) {
-                if (!value || getFieldValue("passWord") === value) {
-                  return Promise.resolve();
-                }
-                return Promise.reject(
-                  new Error("Mật khẩu không trùng khớp, vui lòng thử lại!")
-                );
-              },
-            }),
-          ]}
-        >
-          <Input.Password />
-        </Form.Item>
-      ) : null}
 
       <Form.Item {...tailFormItemLayout}>
         <Row justify="space-evenly">
           <Col>
             <Button type="primary" htmlType="submit">
-              {Object.keys(user).length === 3 ? "Tạo mới" : "Chỉnh sửa"}
+              {Object.keys(product).length === 2 ? "Tạo mới" : "Chỉnh sửa"}
             </Button>
           </Col>
           <Col>
             <Button type="primary" danger>
-              <Link to="/users">Quay lại</Link>
+              <Link to="/products">Quay lại</Link>
             </Button>
           </Col>
         </Row>
@@ -324,4 +287,4 @@ const UserForm = (props) => {
   );
 };
 
-export default UserForm;
+export default ProductForm;

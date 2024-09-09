@@ -14,7 +14,24 @@ const { Header } = Layout;
 
 const HeaderBar = () => {
   const { collapsed, setCollapsed, themeStyle } = useContext(DataContext);
+  function getObjectFromLocalStorage(key) {
+    // Lấy chuỗi JSON từ localStorage theo key
+    const storedData = localStorage.getItem(key);
 
+    // Kiểm tra nếu dữ liệu không tồn tại trong localStorage
+    if (!storedData) {
+      return null;
+    }
+
+    // Chuyển chuỗi JSON thành đối tượng
+    try {
+      return JSON.parse(storedData);
+    } catch (error) {
+      console.error("Error parsing JSON from localStorage:", error);
+      return null;
+    }
+  }
+  const user = getObjectFromLocalStorage("user");
   const items = [
     {
       key: "1",
@@ -69,13 +86,10 @@ const HeaderBar = () => {
                 ...themeStyle,
               }}
             >
-              Xin chào <b>Kim An!</b>{" "}
+              Xin chào <b>{user.name}</b>{" "}
             </Text>
             <Badge count={1}>
-              <Avatar
-                shape="square"
-                src="https://img.freepik.com/free-psd/3d-illustration-human-avatar-profile_23-2150671142.jpg?size=338&ext=jpg&ga=GA1.1.1413502914.1720105200&semt=sph"
-              />
+              <Avatar shape="square" src={user.avatar} />
             </Badge>
           </div>
         </Dropdown>

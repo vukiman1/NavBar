@@ -1,17 +1,26 @@
 import React, { useRef, useState } from "react";
 
-import { SearchOutlined, UserAddOutlined } from "@ant-design/icons";
+import {
+  SearchOutlined,
+  UserAddOutlined,
+  EditOutlined,
+  DeleteFilled,
+  CheckCircleOutlined,
+} from "@ant-design/icons";
 import {
   Avatar,
   Badge,
   Button,
   Flex,
+  Image,
   Input,
   message,
   Popconfirm,
   Space,
   Spin,
   Table,
+  Tag,
+  Tooltip,
 } from "antd";
 import Highlighter from "react-highlight-words";
 
@@ -72,7 +81,7 @@ const Users = () => {
               width: 90,
             }}
           >
-            Search
+            Tìm kiếm
           </Button>
           <Button
             onClick={() => clearFilters && handleReset(clearFilters)}
@@ -111,7 +120,7 @@ const Users = () => {
     filterIcon: (filtered) => (
       <SearchOutlined
         style={{
-          color: filtered ? "#1677ff" : undefined,
+          color: filtered ? "#0577fb" : undefined,
         }}
       />
     ),
@@ -162,30 +171,20 @@ const Users = () => {
   const columns = [
     {
       title: "Tên",
-      dataIndex: "name",
       key: "name",
-      width: "10%",
+      width: "40%",
       ...getColumnSearchProps("name"),
-    },
-    {
-      title: "Ảnh",
-      key: "avatar",
-      width: "10%",
-
       render: (record) => (
         <>
-          {record.avatar !== "" ? (
-            <Avatar src={record.avatar} alt="avatar" />
-          ) : (
-            <Avatar
-              style={{
-                backgroundColor: "#fde3cf",
-                color: "#f56a00",
-              }}
-            >
-              {record.name.trim().charAt(0)}
-            </Avatar>
-          )}
+          <Avatar
+            shape="square"
+            size="large"
+            src={<Image width={40} src={record.avatar} />}
+            style={{ marginRight: "10px" }}
+          />
+          <Link to={`/users/edit/${record.id}`}>
+            <b>{record.name}</b>
+          </Link>
         </>
       ),
     },
@@ -195,16 +194,7 @@ const Users = () => {
       key: "email",
       width: "20%",
     },
-    {
-      title: "Địa chỉ",
-      dataIndex: "address",
-      key: "address",
-    },
-    {
-      title: "Số điện thoại",
-      dataIndex: "phone",
-      key: "phone",
-    },
+
     {
       title: "Tình trạng",
       key: "status",
@@ -212,33 +202,45 @@ const Users = () => {
         <>
           {record.status === "active" ? (
             <>
-              <Badge status="success" text="Active" />
+              <Badge status="success" text="H.Động" />
             </>
           ) : (
-            <Badge status="warning" text="Disabled" />
+            <Badge status="error" text="Khoá" />
           )}
         </>
       ),
     },
     {
-      title: "",
+      title: "Hành động",
       dataIndex: "",
       key: "x",
+      width: "15%",
+
       render: (record) => (
         <>
-          <Link to={`/users/edit/${record.id}`}>Sửa</Link>
-          <Popconfirm
-            title="Xoá tài khoản"
-            description="Xác nhận xoá tài khoản này?"
-            onConfirm={() => handleDeleteUser(record.id)}
-            onCancel={cancel}
-            okText="Xoá"
-            cancelText="Bỏ"
-          >
-            <Button type="link" danger>
-              Xoá
-            </Button>
-          </Popconfirm>
+          <Space.Compact block>
+            <Tooltip title="Sửa">
+              <Button>
+                <Link to={`/users/edit/${record.id}`}>
+                  <EditOutlined />
+                </Link>
+              </Button>
+            </Tooltip>
+            <Tooltip title="Xoá">
+              <Popconfirm
+                title="Xoá tài khoản"
+                description="Xác nhận xoá tài khoản này?"
+                onConfirm={() => handleDeleteUser(record.id)}
+                onCancel={cancel}
+                okText="Xoá"
+                cancelText="Bỏ"
+              >
+                <Button danger>
+                  <DeleteFilled />
+                </Button>
+              </Popconfirm>
+            </Tooltip>
+          </Space.Compact>
         </>
       ),
     },
@@ -266,6 +268,14 @@ const Users = () => {
   const hasSelected = selectedRowKeys.length > 0;
   return (
     <Flex gap="middle" vertical>
+      <Flex align="center" gap="small">
+        <h1 style={{ margin: 0 }}>Quản lý người dùng</h1>
+        <span>
+          <Tag icon={<CheckCircleOutlined />} color="success">
+            {user.length} Người
+          </Tag>
+        </span>
+      </Flex>
       <Flex align="center" gap="middle" justify="space-between">
         <Button type="primary">
           <Link to="/users/add">
