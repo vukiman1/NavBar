@@ -177,6 +177,10 @@ const Users = () => {
     console.log(e);
     message.error("Xoá thất bại");
   };
+
+  const deleteUser = (user) => {
+    console.log(user);
+  };
   const columns = [
     {
       title: "Tên",
@@ -231,7 +235,7 @@ const Users = () => {
             okText="Yes"
             cancelText="No"
           >
-            <Button type="link" danger>
+            <Button type="link" danger onClick={deleteUser(record)}>
               Delete
             </Button>
           </Popconfirm>
