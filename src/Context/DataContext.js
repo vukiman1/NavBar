@@ -5,7 +5,8 @@ export const DataContext = createContext({});
 export const DataContextProvider = ({ children }) => {
   const [currentTheme, setCurrentTheme] = useState("light");
   const [collapsed, setCollapsed] = useState(false);
-  const [breadcrumb, setBreadcrumb] = useState("");
+  const [isLogin, setIsLogin] = useState(true);
+
   const themeStyle = {
     night: {
       backgroundColor: "#001529",
@@ -25,8 +26,8 @@ export const DataContextProvider = ({ children }) => {
         themeStyle: themeStyle[currentTheme === "light" ? "day" : "night"],
         collapsed,
         setCollapsed,
-        breadcrumb,
-        setBreadcrumb,
+        isLogin,
+        setIsLogin,
       }}
     >
       {children}

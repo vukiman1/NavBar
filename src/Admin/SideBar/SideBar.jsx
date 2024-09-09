@@ -13,7 +13,6 @@ const { Sider } = Layout;
 
 const SideBar = () => {
   const [collapsedWidth, setCollapsedWidth] = useState(0);
-
   const { currentTheme, setCurrentTheme, themeStyle, collapsed, setCollapsed } =
     useContext(DataContext);
 
@@ -22,7 +21,7 @@ const SideBar = () => {
       key: "1",
       icon: <PieChartOutlined />,
       label: "Dashboard",
-      children: [{ key: "11", label: <NavLink to="/Home">Home</NavLink> }],
+      children: [{ key: "11", label: <NavLink to="/">Home</NavLink> }],
     },
     {
       key: "2",
@@ -35,6 +34,7 @@ const SideBar = () => {
       label: <NavLink to="/products">Sản phẩm</NavLink>,
     },
   ];
+
   return (
     <div>
       <Sider

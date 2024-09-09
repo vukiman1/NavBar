@@ -1,15 +1,3 @@
-/*!
-  =========================================================
-  * Muse Ant Design Dashboard - v1.0.0
-  =========================================================
-  * Product Page: https://www.creative-tim.com/product/muse-ant-design-dashboard
-  * Copyright 2021 Creative Tim (https://www.creative-tim.com)
-  * Licensed under MIT (https://github.com/creativetimofficial/muse-ant-design-dashboard/blob/main/LICENSE.md)
-  * Coded by Creative Tim
-  =========================================================
-  * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-*/
-
 import { Card, Col, Row, Typography } from "antd";
 import {
   DollarTwoTone,
@@ -19,18 +7,15 @@ import {
 } from "@ant-design/icons";
 import Echart from "../components/chart/EChart";
 import LineChart from "../components/chart/LineChart";
-import { useContext } from "react";
-import { DataContext } from "../Context/DataContext";
 
 function Home() {
   const { Title } = Typography;
-  const { setBreadcrumb } = useContext(DataContext);
-  setBreadcrumb("");
+
   const count = [
     {
       today: "Doanh số hôm nay",
       title: "50.000vnđ",
-      persent: "+30%",
+      // persent: "+30%",
       icon: <DollarTwoTone style={{ fontSize: "46px" }} />,
       bnb: "bnb2",
     },

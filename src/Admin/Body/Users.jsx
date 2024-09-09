@@ -1,6 +1,8 @@
-import React, { useContext, useRef, useState } from "react";
-import { SearchOutlined } from "@ant-design/icons";
+import React, { useRef, useState } from "react";
+
+import { SearchOutlined, UserAddOutlined } from "@ant-design/icons";
 import {
+  Avatar,
   Badge,
   Button,
   Flex,
@@ -8,55 +10,22 @@ import {
   message,
   Popconfirm,
   Space,
+  Spin,
   Table,
 } from "antd";
 import Highlighter from "react-highlight-words";
-import { DataContext } from "../../Context/DataContext";
+
 import { Link } from "react-router-dom";
-const data = [
-  {
-    key: "1",
-    id: "1111",
-    name: "John Brown",
-    email: "a@example.com",
-    status: "Active",
-    address: "New York No. 1 Lake Park",
-    phone: "0123445555",
-  },
-  {
-    key: "2",
-    id: "1112",
-    name: "Joe Black",
-    email: "b@example.com",
-    status: "Active",
-    phone: "0123445555",
-    address: "London No. 1 Lake Park",
-  },
-  {
-    key: "3",
-    id: "1113",
-    name: "Jim Green",
-    email: "xc@example.com",
-    status: "Disabled",
-    phone: "0123445555",
-    address: "Sydney No. 1 Lake Park",
-  },
-  {
-    key: "4",
-    id: "1114",
-    name: "Jim Red",
-    email: "d@example.com",
-    status: "Active",
-    phone: "0123445555",
-    address: "London No. 2 Lake Park",
-  },
-];
+import { BASE_URL } from "../../Config/config";
+import useFetch from "../../hooks/useFetch";
+
 const Users = () => {
+  const { data: user, isLoading } = useFetch(`${BASE_URL}/users`);
+
   const [searchText, setSearchText] = useState("");
   const [searchedColumn, setSearchedColumn] = useState("");
   const searchInput = useRef(null);
-  const { setBreadcrumb } = useContext(DataContext);
-  setBreadcrumb("Tài khoản");
+
   const handleSearch = (selectedKeys, confirm, dataIndex) => {
     confirm();
     setSearchText(selectedKeys[0]);
@@ -169,25 +138,56 @@ const Users = () => {
       ),
   });
 
-  const confirm = (e) => {
-    console.log(e);
-    message.success("Xoá thành công");
-  };
   const cancel = (e) => {
     console.log(e);
     message.error("Xoá thất bại");
   };
 
-  const deleteUser = (user) => {
-    console.log(user);
+  const handleDeleteUser = async (id) => {
+    try {
+      const response = await fetch(`${BASE_URL}/users/${id}`, {
+        method: "DELETE",
+      });
+      if (response.ok) {
+        message.success("Xóa thành công");
+        setTimeout(() => {
+          window.location.reload();
+        }, 600);
+      }
+    } catch (error) {
+      console.error("Xóa thất bại:", error);
+    }
   };
+
   const columns = [
     {
       title: "Tên",
       dataIndex: "name",
       key: "name",
-      width: "30%",
+      width: "10%",
       ...getColumnSearchProps("name"),
+    },
+    {
+      title: "Ảnh",
+      key: "avatar",
+      width: "10%",
+
+      render: (record) => (
+        <>
+          {record.avatar !== "" ? (
+            <Avatar src={record.avatar} alt="avatar" />
+          ) : (
+            <Avatar
+              style={{
+                backgroundColor: "#fde3cf",
+                color: "#f56a00",
+              }}
+            >
+              {record.name.trim().charAt(0)}
+            </Avatar>
+          )}
+        </>
+      ),
     },
     {
       title: "Email",
@@ -208,9 +208,9 @@ const Users = () => {
     {
       title: "Tình trạng",
       key: "status",
-      render: (text, record) => (
+      render: (record) => (
         <>
-          {record.status === "Active" ? (
+          {record.status === "active" ? (
             <>
               <Badge status="success" text="Active" />
             </>
@@ -226,17 +226,17 @@ const Users = () => {
       key: "x",
       render: (record) => (
         <>
-          <Link to={`/users/${record.id}`}>Edit</Link>
+          <Link to={`/users/edit/${record.id}`}>Sửa</Link>
           <Popconfirm
-            title="Delete the task"
-            description="Are you sure to delete this task?"
-            onConfirm={confirm}
+            title="Xoá tài khoản"
+            description="Xác nhận xoá tài khoản này?"
+            onConfirm={() => handleDeleteUser(record.id)}
             onCancel={cancel}
-            okText="Yes"
-            cancelText="No"
+            okText="Xoá"
+            cancelText="Bỏ"
           >
-            <Button type="link" danger onClick={deleteUser(record)}>
-              Delete
+            <Button type="link" danger>
+              Xoá
             </Button>
           </Popconfirm>
         </>
@@ -250,7 +250,6 @@ const Users = () => {
     setLoading(true);
     // ajax request after empty completing
     setTimeout(() => {
-      console.log(data[selectedRowKeys].key);
       setSelectedRowKeys([]);
       setLoading(false);
     }, 1000);
@@ -267,21 +266,39 @@ const Users = () => {
   const hasSelected = selectedRowKeys.length > 0;
   return (
     <Flex gap="middle" vertical>
-      {hasSelected && (
-        <Flex align="center" gap="middle">
-          <Button
-            type="primary"
-            danger
-            onClick={start}
-            disabled={!hasSelected}
-            loading={loading}
-          >
-            Xoá
-          </Button>
-          Đã chọn {selectedRowKeys.length} người dùng
-        </Flex>
+      <Flex align="center" gap="middle" justify="space-between">
+        <Button type="primary">
+          <Link to="/users/add">
+            Thêm mới <UserAddOutlined />
+          </Link>
+        </Button>
+        {hasSelected && (
+          <div>
+            <Button
+              type="primary"
+              danger
+              onClick={start}
+              disabled={!hasSelected}
+              loading={loading}
+            >
+              Xoá
+            </Button>
+            {"  "}
+            Đã chọn {selectedRowKeys.length} người dùng
+          </div>
+        )}
+      </Flex>
+
+      {!isLoading ? (
+        <Table
+          rowSelection={rowSelection}
+          columns={columns}
+          dataSource={user}
+          rowKey="id"
+        />
+      ) : (
+        <Spin size="large" />
       )}
-      <Table rowSelection={rowSelection} columns={columns} dataSource={data} />
     </Flex>
   );
 };

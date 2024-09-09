@@ -8,6 +8,7 @@ import {
 import { Button, Badge, Avatar, Typography, Layout, Dropdown } from "antd";
 import { DataContext } from "../../Context/DataContext";
 import "./Header.css";
+import { Link } from "react-router-dom";
 const { Text } = Typography;
 const { Header } = Layout;
 
@@ -18,28 +19,20 @@ const HeaderBar = () => {
     {
       key: "1",
       label: (
-        <a
-          target="_blank"
-          rel="noopener noreferrer"
-          href="https://www.antgroup.com"
-        >
+        <Link to="/info">
           <SolutionOutlined style={{ marginRight: "5px" }} />
           Thông tin cá nhân
-        </a>
+        </Link>
       ),
     },
     {
       key: "4",
       danger: true,
       label: (
-        <a
-          target="_blank"
-          rel="noopener noreferrer"
-          href="https://www.antgroup.com"
-        >
+        <Link to="/login">
           <LogoutOutlined style={{ marginRight: "5px" }} />
           Đăng xuất
-        </a>
+        </Link>
       ),
     },
   ];

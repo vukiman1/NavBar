@@ -1,6 +1,5 @@
-import React, { useContext } from "react";
+import React from "react";
 import { Table } from "antd";
-import { DataContext } from "../../Context/DataContext";
 
 const columns = [
   {
@@ -68,8 +67,6 @@ const onChange = (pagination, filters, sorter, extra) => {
 };
 
 const Products = () => {
-  const { setBreadcrumb } = useContext(DataContext);
-  setBreadcrumb("Sản phẩm");
   return (
     <div>
       <Table
