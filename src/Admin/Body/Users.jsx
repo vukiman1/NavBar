@@ -176,15 +176,21 @@ const Users = () => {
       ...getColumnSearchProps("name"),
       render: (record) => (
         <>
-          <Avatar
-            shape="square"
-            size="large"
-            src={<Image width={40} src={record.avatar} />}
-            style={{ marginRight: "10px" }}
-          />
-          <Link to={`/users/edit/${record.id}`}>
-            <b>{record.name}</b>
-          </Link>
+          {record.avatar ? (
+            <>
+              <Avatar
+                shape="square"
+                size="large"
+                src={<Image width={40} src={record.avatar} />}
+                style={{ marginRight: "10px" }}
+              />
+              <Link to={`/users/edit/${record.id}`}>
+                <b>{record.name}</b>
+              </Link>
+            </>
+          ) : (
+            "ok"
+          )}
         </>
       ),
     },

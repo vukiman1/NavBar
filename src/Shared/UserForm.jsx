@@ -12,6 +12,7 @@ import {
 } from "antd";
 import { storage } from "../firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+
 import { Link, useNavigate } from "react-router-dom";
 import { BASE_URL } from "../Config/config";
 import { v4 } from "uuid";
@@ -51,20 +52,22 @@ const tailFormItemLayout = {
 const UserForm = (props) => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
-
+  let imgLink = "";
+  let isChangAvt = false;
   const [imageUpload, setImageUpload] = useState(
     "https://img.freepik.com/free-psd/3d-illustration-human-avatar-profile_23-2150671142.jpg?size=338&ext=jpg&ga=GA1.1.1413502914.1720105200&semt=sph"
   );
   const { user = { id: v4(), status: "active", role: "user" } } = props;
+  console.log(user);
   console.log(Object.keys(user).length);
   const onFinish = async () => {
     try {
       // Validate form fields
       const values = await form.validateFields();
-
-      values.id = user.id;
-      values.avatar = imageUpload;
-
+      if (isChangAvt) {
+        values.avatar = imgLink;
+      }
+      console.log(values);
       let response;
       let url = "";
       let method = "";
@@ -104,60 +107,23 @@ const UserForm = (props) => {
   };
 
   const handleChange = (info) => {
-    info.file.status = "uploading";
-    console.log(user.id);
-
-    const file = info.file.originFileObj;
-
-    // Sử dụng FileReader để đọc ảnh
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-
-    reader.onload = () => {
-      const img = new Image();
-      img.src = reader.result;
-
-      img.onload = () => {
-        // Tính toán tỷ lệ giữ nguyên khung hình
-        const maxWidth = 200; // Chiều rộng tối đa
-        const maxHeight = 200; // Chiều cao tối đa
-        let width = img.naturalWidth;
-        let height = img.naturalHeight;
-
-        if (width > height) {
-          if (width > maxWidth) {
-            height = height * (maxWidth / width);
-            width = maxWidth;
-          }
-        } else {
-          if (height > maxHeight) {
-            width = width * (maxHeight / height);
-            height = maxHeight;
-          }
-        }
-
-        // Tạo canvas với kích thước 100x100px
-        const canvas = document.createElement("canvas");
-        canvas.width = width;
-        canvas.height = height;
-
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0, width, height); // Vẽ ảnh vào canvas với kích thước mới, giữ nguyên tỷ lệ
-
-        // Chuyển canvas thành Blob để upload
-        canvas.toBlob((blob) => {
-          const imageRef = ref(storage, `Avatar/${user.id}`);
-          uploadBytes(imageRef, blob).then(() => {
-            // Upload thành công, lấy URL của ảnh
-            getDownloadURL(imageRef).then((url) => {
-              setImageUpload(url);
-              console.log(url);
-            });
-          });
-          info.file.status = "done";
-        }, file.type); // Blob sẽ có cùng loại với file gốc (jpeg, png, ...)
-      };
-    };
+    console.log(info);
+    // info.file.status = "uploading";
+    isChangAvt = true;
+    setImageUpload(info.file.originFileObj);
+    const imageRef = ref(storage, `Avatar/${user.id}`);
+    uploadBytes(imageRef, imageUpload).then(() => {
+      getDownloadURL(imageRef)
+        .then((url) => {
+          imgLink = url;
+          user.avatar = url;
+          console.log(url);
+        })
+        .then(() => {
+          message.success("Upload ảnh thành công");
+        });
+    });
+    info.file.status = "done";
   };
 
   return (
