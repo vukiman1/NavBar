@@ -1,11 +1,21 @@
 import React, { useState } from "react";
-import { Button, Form, Input, message, Select, Row, Col, Upload } from "antd";
+import {
+  Button,
+  Form,
+  Input,
+  message,
+  Select,
+  Row,
+  Col,
+  Upload,
+  Image,
+} from "antd";
 import { storage } from "../firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { Link, useNavigate } from "react-router-dom";
 import { BASE_URL } from "../Config/config";
 import { v4 } from "uuid";
-
+import { ToTopOutlined } from "@ant-design/icons";
 const { Option } = Select;
 const formItemLayout = {
   labelCol: {
@@ -180,8 +190,11 @@ const UserForm = (props) => {
         label="Ảnh đại diện"
         tooltip="Điền link ảnh vào đây!"
       >
+        <Image width={100} src={user.avatar} />
         <Upload onChange={handleChange} maxCount={1} listType="picture">
-          <Button>Chọn ảnh đại diện</Button>
+          <Button icon={<ToTopOutlined />} style={{ marginLeft: "10px" }}>
+            Tải lên ảnh đại diện
+          </Button>
         </Upload>
       </Form.Item>
       <Form.Item

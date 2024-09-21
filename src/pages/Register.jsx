@@ -1,11 +1,42 @@
 import React from "react";
-import { Button, Checkbox, Col, Flex, Form, Input, Row } from "antd";
+import { Button, Col, Form, Input, message, Row } from "antd";
 import { UserOutlined, LockOutlined, MailOutlined } from "@ant-design/icons";
 import backgroundImg from "../Assets/images/img.jpg";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { BASE_URL } from "../Config/config";
+import { v4 } from "uuid";
+
 const Register = () => {
-  const onFinish = (values) => {
-    console.log("Received values of form: ", values);
+  const navigate = useNavigate();
+  const onFinish = async (values) => {
+    console.log(values);
+    try {
+      values.id = v4();
+      values.status = "active";
+      values.avatar =
+        "https://t3.ftcdn.net/jpg/05/70/71/06/360_F_570710660_Jana1ujcJyQTiT2rIzvfmyXzXamVcby8.jpg";
+      console.log(values);
+      const response = await fetch(`${BASE_URL}/users`, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(values),
+      });
+
+      if (response.ok) {
+        message.success("Tạo thành công");
+        setTimeout(() => {
+          navigate("/login");
+        }, 1000);
+      } else {
+        throw new Error("Đã xảy ra lỗi khi gửi yêu cầu");
+      }
+    } catch (error) {
+      console.error("Xử lý thất bại:", error);
+      message.error("Xử lý thất bại");
+    }
   };
 
   return (

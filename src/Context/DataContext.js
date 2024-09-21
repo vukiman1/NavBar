@@ -1,11 +1,28 @@
-import { createContext, useState } from "react";
+import { createContext, useState, useEffect } from "react";
 
 export const DataContext = createContext({});
 
 export const DataContextProvider = ({ children }) => {
   const [currentTheme, setCurrentTheme] = useState("light");
   const [collapsed, setCollapsed] = useState(false);
-  const [isLogin, setIsLogin] = useState(true);
+  const [isLogin, setIsLogin] = useState(null);
+
+  // Check localStorage for "auth" and set "isLogin" accordingly
+  useEffect(() => {
+    const storedAuth = localStorage.getItem("auth");
+    if (storedAuth === null) {
+      localStorage.setItem("auth", "false");
+      setIsLogin(false);
+    } else {
+      setIsLogin(storedAuth === "true");
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isLogin !== null) {
+      localStorage.setItem("auth", isLogin.toString());
+    }
+  }, [isLogin]);
 
   const themeStyle = {
     night: {

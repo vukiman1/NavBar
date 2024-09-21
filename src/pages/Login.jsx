@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import {
   Alert,
   Button,
@@ -15,10 +15,12 @@ import backgroundImg from "../Assets/images/img.jpg";
 import { Link, useNavigate } from "react-router-dom";
 import useFetch from "../hooks/useFetch";
 import { BASE_URL } from "../Config/config";
+import { DataContext } from "../Context/DataContext";
 const Login = () => {
   const navigate = useNavigate();
   const { data: user } = useFetch(`${BASE_URL}/users`);
   const [checkErr, setCheckErr] = useState(false);
+  const { setIsLogin } = useContext(DataContext);
 
   const onFinish = (values) => {
     console.log("Received values of form: ", values);
@@ -32,7 +34,7 @@ const Login = () => {
       ) {
         localStorage.setItem("user", JSON.stringify(user));
         setCheckErr(false);
-
+        setIsLogin(true);
         message.success("Đăng nhập thành công").then(() => {
           navigate("/");
         });
@@ -142,7 +144,14 @@ const Login = () => {
                 <span style={{ color: "white" }}>Chưa có tài khoản?</span>{" "}
                 <Link to="/register">
                   {" "}
-                  <b style={{ color: "white" }}>Đăng ký ngay!</b>
+                  <Button
+                    type="link"
+                    onClick={() => {
+                      navigate("/register");
+                    }}
+                  >
+                    <b style={{ color: "white" }}>Đăng ký ngay!</b>
+                  </Button>
                 </Link>
               </Form.Item>
             </Form>

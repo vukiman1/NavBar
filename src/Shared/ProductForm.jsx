@@ -9,6 +9,7 @@ import {
   Col,
   Upload,
   InputNumber,
+  Image,
 } from "antd";
 import { storage } from "../firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
@@ -193,8 +194,9 @@ const ProductForm = (props) => {
         label="Ảnh sản phẩm"
         tooltip="Điền link ảnh vào đây!"
       >
+        <Image width={200} src={product.imageUrl} />
         <Upload onChange={handleChange} maxCount={1} listType="picture">
-          <Button>Chọn ảnh sản phẩm</Button>
+          <Button style={{ marginLeft: "10px" }}>Chọn ảnh sản phẩm</Button>
         </Upload>
       </Form.Item>
       <Form.Item
@@ -249,9 +251,9 @@ const ProductForm = (props) => {
         ]}
       >
         <Select placeholder="Chọn loại hàng">
-          <Option value="shoes">Giày dép</Option>
-          <Option value="technology">Điện tử</Option>
-          <Option value="other">Khác</Option>
+          <Option value="Quần áo">Quần áo</Option>
+          <Option value="Điện tử">Điện tử</Option>
+          <Option value="Trang sức">Trang sức</Option>
         </Select>
       </Form.Item>
 
