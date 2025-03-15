@@ -1,8 +1,7 @@
-import React, { useContext } from "react";
+import React from "react";
 import { Route, Routes } from "react-router-dom";
 import Register from "../pages/Register";
 import Admin from "../Admin/Admin";
-import { DataContext } from "../Context/DataContext";
 import LoginPage from "../pages/Login";
 
 const AuthRouter = () => {

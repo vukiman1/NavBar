@@ -2,10 +2,13 @@ import { Button, Menu, Layout } from "antd";
 import {
   MoonOutlined,
   SunOutlined,
-  DropboxOutlined,
+  ShopOutlined,
   UserOutlined,
   PieChartOutlined,
   ReconciliationOutlined,
+  BarsOutlined,
+  SolutionOutlined,
+  SettingOutlined
 } from "@ant-design/icons";
 import React, { useContext, useState } from "react";
 import { DataContext } from "../../Context/DataContext";
@@ -22,22 +25,44 @@ const SideBar = () => {
       key: "1",
       icon: <PieChartOutlined />,
       label: "Dashboard",
-      children: [{ key: "11", label: <NavLink to="/">Home</NavLink> }],
+      children: [{ key: "11", label: <NavLink to="/">Trang chủ</NavLink> },
+        { key: "111", label: <NavLink to="/notification">Thông báo</NavLink> }
+      ],
     },
     {
       key: "2",
       icon: <UserOutlined />,
-      label: <NavLink to="/users">Tài khoản</NavLink>,
+      label: <NavLink to="/users">Quản lý người dùng</NavLink>,
     },
     {
       key: "3",
-      icon: <DropboxOutlined />,
-      label: <NavLink to="/products">Sản phẩm</NavLink>,
+      icon: <ShopOutlined />,
+      label: <NavLink to="/company">Quản lý công ty</NavLink>,
     },
     {
       key: "4",
       icon: <ReconciliationOutlined />,
-      label: <NavLink to="/revenue">Đơn hàng</NavLink>,
+      label: <NavLink to="/job-post">Tin tuyển dụng</NavLink>,
+    },
+    {
+      key: "44",
+      icon: <BarsOutlined />,
+      label: "Trang web",
+      children: [
+        { key: "441", label: <NavLink to="/banner">Quảng cáo</NavLink> },
+        { key: "442", label: <NavLink to="/review">Đánh giá</NavLink> },
+        { key: "443", label: <NavLink to="/revenue">Quản lý vị trí</NavLink> },
+      ],
+    },
+    {
+      key: "5",
+      icon: <SolutionOutlined />,
+      label: <NavLink to="/resume">Hồ sơ ứng viên</NavLink>,
+    },
+    {
+      key: "6",
+      icon: <SettingOutlined />,
+      label: <NavLink to="/setting">Cài đặt hệ thống</NavLink>,
     },
   ];
 
