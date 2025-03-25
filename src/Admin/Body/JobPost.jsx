@@ -13,6 +13,7 @@ import {
   Modal,
   message,
   Select,
+  Input,
 } from "antd";
 import {
   CheckCircleOutlined,
@@ -24,11 +25,13 @@ import {
   UserOutlined,
   DollarOutlined,
   EnvironmentOutlined,
+  SearchOutlined,
 } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import dayjs from "dayjs";
 
 const { Title, Text } = Typography;
+const { Option } = Select;
 
 const JobPost = () => {
   const [jobList, setJobList] = useState([]);
@@ -36,12 +39,22 @@ const JobPost = () => {
   const [selectedJobId, setSelectedJobId] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
 
+  // Bộ lọc
+  const [searchText, setSearchText] = useState("");
+  const [approvalStatus, setApprovalStatus] = useState(null);
+  const [recruitmentStatus, setRecruitmentStatus] = useState(null);
+
   const loadJobList = async () => {
     setTableLoading(true);
     try {
-      const resData = await jobService.getAllJobPost();
+      const params = {
+        search: searchText || undefined,
+        approvalStatus: approvalStatus !== null ? approvalStatus : undefined,
+        recruitmentStatus: recruitmentStatus !== null ? recruitmentStatus : undefined,
+      };
+
+      const resData = await jobService.getAllJobPost(params);
       setJobList(resData);
-      console.log(jobList);
     } catch (error) {
       console.error("Error fetching jobs:", error);
       message.error("Không thể tải danh sách tin tuyển dụng");
@@ -52,7 +65,7 @@ const JobPost = () => {
 
   useEffect(() => {
     loadJobList();
-  }, []);
+  }, [searchText, approvalStatus, recruitmentStatus]);
 
   const handleUpdateStatus = async (id, status) => {
     try {
@@ -81,8 +94,6 @@ const JobPost = () => {
     setSelectedJobId(id);
     setIsModalVisible(true);
   };
-
-  
 
   const handleStatusChange = (value, record) => {
     handleUpdateStatus(record.id, value);
@@ -121,88 +132,27 @@ const JobPost = () => {
       ),
     },
     {
-      title: "Người đăng",
-      dataIndex: "contactPersonName",
-      key: "contactPersonName",
-      render: (_, record) => (
-        <Space direction="vertical" size="small">
-          <Text>{record.contactPersonName}</Text>
-          <Text type="secondary" style={{ fontSize: "12px" }}>
-            {record.contactPersonEmail}
-          </Text>
-          <Text type="secondary" style={{ fontSize: "12px" }}>
-            {record.contactPersonPhone}
-          </Text>
-        </Space>
-      ),
-    },
-    {
       title: "Thời hạn",
       dataIndex: "deadline",
       key: "deadline",
-      render: (deadline) => (
-        <Text>{dayjs(deadline).format("DD/MM/YYYY")}</Text>
-      ),
+      render: (deadline) => <Text>{dayjs(deadline).format("DD/MM/YYYY")}</Text>,
     },
     {
-      title: "Trạng thái",
+      title: "Trạng thái duyệt",
       key: "status",
       dataIndex: "status",
       width: "200px",
       render: (status, record) => (
-        <Space direction="vertical" size="small" style={{ width: '100%' }}>
-          <Select
-            value={status}
-            style={{ width: '100%' }}
-            onChange={(value) => handleStatusChange(value, record)}
-            options={[
-              {
-                value: 1,
-                label: 'Chờ duyệt',
-                icon: <ClockCircleOutlined />,
-                className: 'status-pending'
-              },
-              {
-                value: 3,
-                label: 'Phê duyệt',
-                icon: <CheckCircleOutlined />,
-                className: 'status-approved'
-              },
-              {
-                value: 2,
-                label: 'Từ chối',
-                icon: <CloseCircleOutlined />,
-                className: 'status-rejected'
-              }
-            ]}
-            optionRender={(option) => (
-              <Space>
-                <Tag
-                  icon={option.data.icon}
-                  color={
-                    option.value === 1 ? 'warning' :
-                    option.value === 2 ? 'error' :
-                    option.value === 3 ? 'success' : 'default'
-                  }
-                  style={{ margin: 0 }}
-                >
-                  {option.data.label}
-                </Tag>
-              </Space>
-            )}
-            dropdownStyle={{ minWidth: '160px' }}
-          />
-        </Space>
-      ),
-    },
-    {
-      title: "Thống kê",
-      key: "stats",
-      render: (_, record) => (
-        <Space direction="vertical" size="small">
-          <Text>Lượt xem: {record.views}</Text>
-          <Text>Lượt chia sẻ: {record.shares}</Text>
-        </Space>
+        <Select
+          value={status}
+          style={{ width: "100%" }}
+          onChange={(value) => handleStatusChange(value, record)}
+          options={[
+            { value: 1, label: "Chờ duyệt", icon: <ClockCircleOutlined /> },
+            { value: 3, label: "Phê duyệt", icon: <CheckCircleOutlined /> },
+            { value: 2, label: "Từ chối", icon: <CloseCircleOutlined /> },
+          ]}
+        />
       ),
     },
     {
@@ -215,7 +165,7 @@ const JobPost = () => {
             <Button
               icon={<EyeOutlined />}
               type="link"
-              onClick={() => window.open(`/jobs/${record.slug}`, '_blank')}
+              onClick={() => window.open(`/jobs/${record.slug}`, "_blank")}
             />
           </Tooltip>
           <Tooltip title="Xóa">
@@ -234,31 +184,52 @@ const JobPost = () => {
   return (
     <Card>
       <Flex vertical gap="middle">
+        {/* Header */}
         <Flex align="center" justify="space-between">
           <Flex align="center" gap="small">
             <Title level={4} style={{ margin: 0 }}>
               Quản lý tin tuyển dụng
             </Title>
-            <Tag color="blue" icon={<FireOutlined />}>{jobList?.length || 0} tin tuyển dụng</Tag>
+            <Tag color="blue" icon={<FireOutlined />}>
+              {jobList?.length || 0} tin tuyển dụng
+            </Tag>
           </Flex>
         </Flex>
 
-        {tableLoading ? (
-          <Flex align="center" justify="center" style={{ minHeight: 400 }}>
-            <Spin size="large" />
-          </Flex>
-        ) : (
-          <Table
-            columns={columns}
-            dataSource={jobList}
-            rowKey="id"
-            pagination={{
-              defaultPageSize: 10,
-              showSizeChanger: true,
-              showTotal: (total) => `Tổng cộng ${total} tin tuyển dụng`,
-            }}
+        {/* Bộ lọc */}
+        <Flex gap="middle" style={{ marginBottom: 16 }}>
+          <Input
+            placeholder="Tìm kiếm tin tuyển dụng..."
+            prefix={<SearchOutlined />}
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            style={{ width: 300 }}
           />
-        )}
+
+          <Select
+            placeholder="Trạng thái duyệt"
+            allowClear
+            onChange={(value) => setApprovalStatus(value)}
+            style={{ width: 200 }}
+          >
+            <Option value={1}>Chờ duyệt</Option>
+            <Option value={3}>Phê duyệt</Option>
+            <Option value={2}>Từ chối</Option>
+          </Select>
+
+          <Select
+            placeholder="Trạng thái tuyển dụng"
+            allowClear
+            onChange={(value) => setRecruitmentStatus(value)}
+            style={{ width: 200 }}
+          >
+            <Option value={1}>Còn hạn</Option>
+            <Option value={0}>Hết hạn</Option>
+          </Select>
+        </Flex>
+
+        {/* Bảng dữ liệu */}
+        <Table columns={columns} dataSource={jobList} rowKey="id" loading={tableLoading} />
 
         <Modal
           title="Xác nhận xóa"

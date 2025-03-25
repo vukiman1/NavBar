@@ -1,16 +1,19 @@
-import { webService } from "./webService";
+import httpRequest from "../utils/httpRequest";
 
 export const bannerService = {
-    getAllBanner: () => {
-        return webService.get("/banners");
+    getAllBanner: async () => {
+        const url = "myjob/admin/banner";
+        return httpRequest.get(url);
     },
-    createBanner: (data) => {
-        return webService.post("/banners", data);
-    },
+
     updateBanner: (id, data) => {
-        return webService.put(`/banners/${id}`, data);
+        return httpRequest.put(`/banners/${id}`, data);
+    },
+    updateBannerStatus: (id, isActive) => {
+        const url = `myjob/web/banner/status/${id}`;
+        return httpRequest.post(url, { isActive });
     },
     deleteBanner: (id) => {
-        return webService.delete(`/banners/${id}`);
+        return httpRequest.delete(`/banners/${id}`);
     }
 };

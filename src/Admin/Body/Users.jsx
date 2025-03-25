@@ -1,22 +1,16 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   SearchOutlined,
   UserAddOutlined,
   EditOutlined,
   DeleteFilled,
-  CheckCircleOutlined,
   ReloadOutlined,
   DownloadOutlined,
-  FilterOutlined,
-  UserSwitchOutlined,
-  InfoCircleOutlined,
 } from "@ant-design/icons";
 import {
   Avatar,
   Button,
   Card,
-  Dropdown,
-  Flex,
   Input,
   message,
   Popconfirm,
@@ -26,205 +20,94 @@ import {
   Tag,
   Tooltip,
   Typography,
+  Select,
   theme,
 } from "antd";
-import Highlighter from "react-highlight-words";
 import { Link } from "react-router-dom";
-import { BASE_URL } from "../../Config/config";
-import useFetch from "../../hooks/useFetch";
-import * as XLSX from 'xlsx';
+import * as XLSX from "xlsx";
 import userService from "../../services/userService";
-// import userService from "../../services/userService";
 
 const { Title, Text } = Typography;
-const { useToken } = theme;
+const { Option } = Select;
 
 const Users = () => {
-  const { token } = useToken();
-  const { isLoading } = useFetch(`${BASE_URL}/users`);
   const [userList, setUserList] = useState([]);
-  const [searchText, setSearchText] = useState("");
-  const [searchedColumn, setSearchedColumn] = useState("");
+  const [filteredUserList, setFilteredUserList] = useState([]);
   const [tableLoading, setTableLoading] = useState(false);
-  const searchInput = useRef(null);
-  // const userlist = await userService.getUserList();
-  // console.log(userlist);
+
+  // State cho thanh tìm kiếm & bộ lọc
+  const [globalSearch, setGlobalSearch] = useState("");
+  const [filterRole, setFilterRole] = useState("");
+  const [filterActive, setFilterActive] = useState("");
+  const [filterEmailVerified, setFilterEmailVerified] = useState("");
 
   useEffect(() => {
-    const loadUserList = async () => {
-      setTableLoading(true);
-      try {
-        const resData = await userService.getUserList();
-        setUserList(resData.data);
-      } catch (error) {
-        console.error("Error fetching users:", error);
-      } finally {
-        setTableLoading(false);
-      }
-    };
-
     loadUserList();
-  }, []); // Chỉ gọi 1 lần khi component mount (khi refresh trang)
+  }, []);
 
+  const loadUserList = async () => {
+    setTableLoading(true);
+    try {
+      const resData = await userService.getUserList();
+      setUserList(resData.data);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    } finally {
+      setTableLoading(false);
+    }
+  };
+
+  // Lọc danh sách người dùng dựa trên tìm kiếm và các bộ lọc
   useEffect(() => {
-    console.log("User List Updated:", userList);
-  }, [userList]);
+    let filtered = [...userList];
 
+    if (globalSearch) {
+      filtered = filtered.filter(
+        (user) =>
+          user.fullName.toLowerCase().includes(globalSearch.toLowerCase()) ||
+          user.email.toLowerCase().includes(globalSearch.toLowerCase())
+      );
+    }
 
+    if (filterRole) {
+      filtered = filtered.filter((user) => user.roleName === filterRole);
+    }
 
-  const handleSearch = (selectedKeys, confirm, dataIndex) => {
-    confirm();
-    setSearchText(selectedKeys[0]);
-    setSearchedColumn(dataIndex);
-  };
+    if (filterActive !== "") {
+      const isActive = filterActive === "active";
+      filtered = filtered.filter((user) => user.isActive === isActive);
+    }
 
-  const handleReset = (clearFilters) => {
-    clearFilters();
-    setSearchText("");
-  };
+    if (filterEmailVerified !== "") {
+      const isVerified = filterEmailVerified === "verified";
+      filtered = filtered.filter((user) => user.isEmailVerified === isVerified);
+    }
+
+    setFilteredUserList(filtered);
+  }, [userList, globalSearch, filterRole, filterActive, filterEmailVerified]);
 
   const handleExportExcel = () => {
-    const worksheet = XLSX.utils.json_to_sheet(userList.map(item => ({
-      'ID': item.id,
-      'Tên': item.fullName,
-      'Email': item.email,
-      'Trạng thái': item.isActive ? 'Hoạt động' : 'Khoá',
-      'Role': item.roleName,
-      'Tạo vào': item.createAt,
-    })));
+    const worksheet = XLSX.utils.json_to_sheet(
+      filteredUserList.map((item) => ({
+        ID: item.id,
+        "Tên đầy đủ": item.fullName,
+        Email: item.email,
+        "Trạng thái": item.isActive ? "Hoạt động" : "Khoá",
+        "Xác nhận Email": item.isEmailVerified ? "Đã xác nhận" : "Chưa xác nhận",
+        Role: item.roleName,
+      }))
+    );
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Users");
     XLSX.writeFile(workbook, "users.xlsx");
-    message.success('Xuất file Excel thành công');
+    message.success("Xuất file Excel thành công");
   };
-
-  const handleBulkStatusChange = async (status) => {
-    setTableLoading(true);
-    try {
-      const promises = selectedRowKeys.map(id =>
-        fetch(`${BASE_URL}/users/${id}`, {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ status }),
-        })
-      );
-      await Promise.all(promises);
-      message.success(`Cập nhật trạng thái thành công cho ${selectedRowKeys.length} người dùng`);
-      setSelectedRowKeys([]);
-      window.location.reload();
-    } catch (error) {
-      message.error("Cập nhật trạng thái thất bại");
-    }
-    setTableLoading(false);
-  };
-
-  const getColumnSearchProps = (dataIndex) => ({
-    filterDropdown: ({
-      setSelectedKeys,
-      selectedKeys,
-      confirm,
-      clearFilters,
-      close,
-    }) => (
-      <Card
-        size="small"
-        style={{
-          padding: 12,
-          width: 300,
-          boxShadow: token.boxShadowSecondary,
-        }}
-        onKeyDown={(e) => e.stopPropagation()}
-      >
-        <Input
-          ref={searchInput}
-          placeholder={`Tìm kiếm ${dataIndex}`}
-          value={selectedKeys[0]}
-          onChange={(e) =>
-            setSelectedKeys(e.target.value ? [e.target.value] : [])
-          }
-          onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
-          style={{
-            marginBottom: 12,
-            display: "block",
-          }}
-          suffix={
-            <Tooltip title="Nhập từ khoá để tìm kiếm">
-              <InfoCircleOutlined style={{ color: token.colorTextSecondary }} />
-            </Tooltip>
-          }
-        />
-        <Space style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <Space>
-            <Button
-              type="primary"
-              onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
-              icon={<SearchOutlined />}
-              size="small"
-            >
-              Tìm kiếm
-            </Button>
-            <Button
-              onClick={() => clearFilters && handleReset(clearFilters)}
-              size="small"
-            >
-              Đặt lại
-            </Button>
-          </Space>
-          <Button
-            type="link"
-            size="small"
-            onClick={() => {
-              close();
-            }}
-          >
-            Đóng
-          </Button>
-        </Space>
-      </Card>
-    ),
-    filterIcon: (filtered) => (
-      <SearchOutlined
-        style={{
-          color: filtered ? token.colorPrimary : undefined,
-        }}
-      />
-    ),
-    onFilter: (value, record) =>
-      record[dataIndex]?.toString().toLowerCase().includes(value.toLowerCase()),
-    onFilterDropdownOpenChange: (visible) => {
-      if (visible) {
-        setTimeout(() => searchInput.current?.select(), 100);
-      }
-    },
-    render: (text) =>
-      searchedColumn === dataIndex ? (
-        <Highlighter
-          highlightStyle={{
-            backgroundColor: "#ffc069",
-            padding: 0,
-          }}
-          searchWords={[searchText]}
-          autoEscape
-          textToHighlight={text ? text.toString() : ""}
-        />
-      ) : (
-        text
-      ),
-  });
 
   const handleDeleteUser = async (id) => {
     try {
-      const response = await fetch(`${BASE_URL}/users/${id}`, {
-        method: "DELETE",
-      });
-      if (response.ok) {
-        message.success("Xóa người dùng thành công");
-        setTimeout(() => {
-          window.location.reload();
-        }, 600);
-      }
+      await userService.deleteUser(id);
+      message.success("Xóa người dùng thành công");
+      loadUserList();
     } catch (error) {
       message.error("Xóa người dùng thất bại");
     }
@@ -234,28 +117,12 @@ const Users = () => {
     {
       title: "Tên",
       key: "name",
-      width: "35%",
-      ...getColumnSearchProps("name"),
+      width: "25%",
       render: (record) => (
         <Space>
-          <Avatar
-            size={40}
-            src={record.avatarUrl}
-            style={{ 
-              backgroundColor: !record.avatarUrl ? token.colorPrimary : undefined,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            {!record.avatarUrl && record.fullName?.[0]?.toUpperCase()}
-          </Avatar>
+          <Avatar size={40} src={record.avatarUrl} />
           <Link to={`/users/edit/${record.id}`}>
-            <Typography.Text strong>{record.fullName}</Typography.Text>
-            <br />
-            <Typography.Text type="secondary" style={{ fontSize: '12px' }}>
-              ID: {record.id}
-            </Typography.Text>
+            <Text strong>{record.fullName}</Text>
           </Link>
         </Space>
       ),
@@ -264,49 +131,64 @@ const Users = () => {
       title: "Email",
       dataIndex: "email",
       key: "email",
-      width: "30%",
-      ...getColumnSearchProps("email"),
+      width: "20%",
     },
     {
       title: "Role",
       dataIndex: "roleName",
       key: "roleName",
-      width: "30%",
-      ...getColumnSearchProps("roleName"),
+      width: "15%",
+      filters: [
+        { text: "Ứng viên", value: "JOB_SEEKER" },
+        { text: "Nhà tuyển dụng", value: "EMPLOYER" },
+      ],
+      onFilter: (value, record) => record.roleName === value,
+      render: (role) => <Tag color={role === "JOB_SEEKER" ? "blue" : "green"}>{role}</Tag>,
     },
     {
       title: "Trạng thái",
       key: "status",
+      width: "10%",
+      filters: [
+        { text: "Hoạt động", value: true },
+        { text: "Khoá", value: false },
+      ],
+      onFilter: (value, record) => record.isActive === value,
+      render: (record) => (
+        <Tag color={record.isActive ? "success" : "error"}>
+          {record.isActive ? "Hoạt động" : "Khoá"}
+        </Tag>
+      ),
+    },
+    {
+      title: "Xác nhận Email",
+      key: "isVerifyEmail",
       width: "15%",
       filters: [
-        { text: "Hoạt động", value: "active" },
-        { text: "Khoá", value: "inactive" },
+        { text: "Đã xác nhận", value: true },
+        { text: "Chưa xác nhận", value: false },
       ],
-      onFilter: (value, record) => record.status === value,
+      onFilter: (value, record) => record.isVerifyEmail === value,
       render: (record) => (
-        <Tag
-          color={record.isActive  ? "success" : "error"}
-          icon={record.isActive ? <CheckCircleOutlined /> : <DeleteFilled />}
-          style={{ minWidth: 85, textAlign: 'center' }}
-        >
-          {record.isActive ? "Hoạt động" : "Khoá"}
+        <Tag color={record.isVerifyEmail ? "blue" : "warning"}>
+          {record.isVerifyEmail ? "Đã xác nhận" : "Chưa xác nhận"}
         </Tag>
       ),
     },
     {
       title: "Hành động",
       key: "action",
-      width: "20%",
+      width: "15%",
       render: (record) => (
         <Space>
-          <Tooltip title="Chỉnh sửa thông tin">
-            <Button type="primary" ghost icon={<EditOutlined />}>
-              <Link to={`/users/edit/${record.id}`} />
-            </Button>
+          <Tooltip title="Chỉnh sửa">
+          <Link to={`/users/edit/${record.id}`}>
+          <Button type="primary" ghost icon={<EditOutlined />}/>
+          </Link>
           </Tooltip>
           <Tooltip title="Xoá người dùng">
             <Popconfirm
-              title="Xoá người dùng"
+              title="Xoá người dùng?"
               description="Bạn có chắc chắn muốn xoá người dùng này?"
               onConfirm={() => handleDeleteUser(record.id)}
               okText="Xoá"
@@ -322,96 +204,75 @@ const Users = () => {
     },
   ];
 
-  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
-  const onSelectChange = (newSelectedRowKeys) => {
-    setSelectedRowKeys(newSelectedRowKeys);
-  };
-
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: onSelectChange,
-  };
-
-  const bulkActionItems = [
-    {
-      key: 'active',
-      label: 'Kích hoạt người dùng',
-      icon: <CheckCircleOutlined />,
-      onClick: () => handleBulkStatusChange('active')
-    },
-    {
-      key: 'inactive',
-      label: 'Khoá người dùng',
-      icon: <DeleteFilled />,
-      onClick: () => handleBulkStatusChange('inactive')
-    }
-  ];
-
   return (
     <Card bodyStyle={{ padding: 24 }}>
-      <Flex vertical gap="middle">
-        <Flex align="center" justify="space-between">
-          <Flex align="center" gap="small">
-            <Title level={4} style={{ margin: 0 }}>Quản lý người dùng</Title>
-            <Tag icon={<UserSwitchOutlined />} color="blue">
-              {userList?.length || 0} người dùng
-            </Tag>
-          </Flex>
+      <Space direction="vertical" style={{ width: "100%" }} size="middle">
+        {/* Header và các thao tác chung */}
+        <Space style={{ justifyContent: "space-between", width: "100%" }}>
+          <Title level={4}>Quản lý người dùng</Title>
           <Space>
-            <Tooltip title="Làm mới danh sách">
-              <Button 
-                icon={<ReloadOutlined />}
-                onClick={() => window.location.reload()}
-              />
-            </Tooltip>
-            <Tooltip title="Xuất danh sách Excel">
-              <Button 
-                icon={<DownloadOutlined />}
-                onClick={handleExportExcel}
-              />
-            </Tooltip>
+            <Button icon={<ReloadOutlined />} onClick={loadUserList} />
+            <Button icon={<DownloadOutlined />} onClick={handleExportExcel} />
             <Button type="primary">
               <Link to="/users/add">
                 <Space>
-                  Thêm mới
-                  <UserAddOutlined />
+                  Thêm mới <UserAddOutlined />
                 </Space>
               </Link>
             </Button>
           </Space>
-        </Flex>
+        </Space>
 
-        {selectedRowKeys.length > 0 && (
-          <Card size="small" style={{ backgroundColor: token.colorBgTextHover }}>
-            <Flex align="center" justify="space-between">
-              <Text>
-                Đã chọn <Text strong>{selectedRowKeys.length}</Text> người dùng
-              </Text>
-              <Space>
-                <Dropdown
-                  menu={{ items: bulkActionItems }}
-                  placement="bottomRight"
-                >
-                  <Button icon={<FilterOutlined />}>
-                    Thao tác hàng loạt
-                  </Button>
-                </Dropdown>
-              </Space>
-            </Flex>
-          </Card>
-        )}
+        {/* Thanh tìm kiếm và bộ lọc */}
+        <Space style={{ flexWrap: "wrap" }} size="middle">
+          <Input
+            placeholder="Tìm kiếm theo tên hoặc email..."
+            prefix={<SearchOutlined />}
+            allowClear
+            value={globalSearch}
+            onChange={(e) => setGlobalSearch(e.target.value)}
+            style={{ width: 300 }}
+          />
+          <Select
+            placeholder="Lọc theo Role"
+            allowClear
+            value={filterRole || undefined}
+            onChange={(value) => setFilterRole(value)}
+            style={{ width: 200 }}
+          >
+            <Option value="JOB_SEEKER">Ứng viên</Option>
+            <Option value="EMPLOYER">Nhà tuyển dụng</Option>
+          </Select>
+          <Select
+            placeholder="Lọc trạng thái"
+            allowClear
+            value={filterActive || undefined}
+            onChange={(value) => setFilterActive(value)}
+            style={{ width: 200 }}
+          >
+            <Option value="active">Hoạt động</Option>
+            <Option value="inactive">Khoá</Option>
+          </Select>
+          <Select
+            placeholder="Lọc xác nhận Email"
+            allowClear
+            value={filterEmailVerified || undefined}
+            onChange={(value) => setFilterEmailVerified(value)}
+            style={{ width: 200 }}
+          >
+            <Option value="verified">Đã xác nhận</Option>
+            <Option value="unverified">Chưa xác nhận</Option>
+          </Select>
+        </Space>
 
-        {isLoading ? (
-          <Flex align="center" justify="center" style={{ minHeight: 400 }}>
-            <Spin size="large" />
-          </Flex>
+        {/* Bảng danh sách */}
+        {tableLoading ? (
+          <Spin size="large" style={{ display: "block", marginTop: 50 }} />
         ) : (
           <Table
-            rowSelection={rowSelection}
             columns={columns}
-            dataSource={userList}
+            dataSource={filteredUserList}
             rowKey="id"
-            loading={tableLoading}
             pagination={{
               defaultPageSize: 10,
               showSizeChanger: true,
@@ -420,7 +281,7 @@ const Users = () => {
             }}
           />
         )}
-      </Flex>
+      </Space>
     </Card>
   );
 };

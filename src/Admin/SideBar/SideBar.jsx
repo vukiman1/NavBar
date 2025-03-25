@@ -50,14 +50,15 @@ const SideBar = () => {
       label: "Trang web",
       children: [
         { key: "441", label: <NavLink to="/banner">Quảng cáo</NavLink> },
-        { key: "442", label: <NavLink to="/review">Đánh giá</NavLink> },
-        { key: "443", label: <NavLink to="/revenue">Quản lý vị trí</NavLink> },
+        { key: "442", label: <NavLink to="/feedback">Đánh giá</NavLink> },
+        { key: "443", label: <NavLink to="/cities">Vị trí</NavLink> },
+        { key: "444", label: <NavLink to="/job-categories">Ngành nghề</NavLink> },
       ],
     },
     {
       key: "5",
       icon: <SolutionOutlined />,
-      label: <NavLink to="/resume">Hồ sơ ứng viên</NavLink>,
+      label: <NavLink to="/jobseekers">Hồ sơ ứng viên</NavLink>,
     },
     {
       key: "6",

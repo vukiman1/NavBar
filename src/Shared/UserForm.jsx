@@ -1,305 +1,154 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Button,
   Form,
   Input,
-  message,
-  Select,
-  Row,
-  Col,
   Upload,
   Image,
+  Row,
+  Col,
+  Card,
+  DatePicker,
+  Select,
+  message,
 } from "antd";
+import { ToTopOutlined } from "@ant-design/icons";
 import { storage } from "../firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-
-import { Link, useNavigate } from "react-router-dom";
-import { BASE_URL } from "../Config/config";
 import { v4 } from "uuid";
-import { ToTopOutlined } from "@ant-design/icons";
+import dayjs from "dayjs";
+import "./UserForm.css";
+
 const { Option } = Select;
-const formItemLayout = {
-  labelCol: {
-    xs: {
-      span: 24,
-    },
-    sm: {
-      span: 8,
-    },
-  },
-  wrapperCol: {
-    xs: {
-      span: 24,
-    },
-    sm: {
-      span: 16,
-    },
-  },
-};
-const tailFormItemLayout = {
-  wrapperCol: {
-    xs: {
-      span: 24,
-      offset: 0,
-    },
-    sm: {
-      span: 16,
-      offset: 8,
-    },
-  },
-};
 
-const UserForm = (props) => {
+const UserForm = ({ user }) => {
   const [form] = Form.useForm();
-  const navigate = useNavigate();
-  let imgLink = "";
-  let isChangAvt = false;
-  const [imageUpload, setImageUpload] = useState(
-    "https://img.freepik.com/free-psd/3d-illustration-human-avatar-profile_23-2150671142.jpg?size=338&ext=jpg&ga=GA1.1.1413502914.1720105200&semt=sph"
-  );
-  const { user = { id: v4(), status: "active", role: "user" } } = props;
-  console.log(user);
-  console.log(Object.keys(user).length);
-  const onFinish = async () => {
-    try {
-      // Validate form fields
-      const values = await form.validateFields();
-      if (isChangAvt) {
-        values.avatar = imgLink;
-      }
-      console.log(values);
-      let response;
-      let url = "";
-      let method = "";
-      if (Object.keys(user).length === 3) {
-        url = `${BASE_URL}/users`;
-        method = "POST";
-        delete values.confirm;
-      } else {
-        url = `${BASE_URL}/users/${user.id}`;
-        method = "PUT";
-        values.avatar = user.avatar;
-      }
+  const [imageUrl, setImageUrl] = useState(user?.avatarUrl || "https://via.placeholder.com/120");
 
-      response = await fetch(url, {
-        method,
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(values),
+  useEffect(() => {
+    if (user) {
+      form.setFieldsValue({
+        fullName: user.fullName,
+        email: user.email,
+        phone: user?.jobSeekerProfile?.phone || user?.company?.companyPhone,
+        birthday: user?.jobSeekerProfile?.birthday ? dayjs(user.jobSeekerProfile.birthday) : null,
+        gender: user?.jobSeekerProfile?.gender,
+        maritalStatus: user?.jobSeekerProfile?.maritalStatus,
+        companyName: user?.company?.companyName,
+        companyLocation: user?.company?.location?.address,
       });
+    }
+  }, [user]);
 
-      if (response.ok) {
-        message.success(
-          Object.keys(user).length === 3 ? "Tạo thành công" : "Sửa thành công"
-        );
-        setTimeout(() => {
-          navigate("/users");
-        }, 1000);
-      } else {
-        throw new Error("Đã xảy ra lỗi khi gửi yêu cầu");
-      }
+  const handleUpload = async (info) => {
+    const file = info.file.originFileObj;
+    const imageRef = ref(storage, `Avatar/${user.id || v4()}`);
+
+    try {
+      const snapshot = await uploadBytes(imageRef, file);
+      const downloadURL = await getDownloadURL(snapshot.ref);
+      setImageUrl(downloadURL);
+      form.setFieldsValue({ avatarUrl: downloadURL });
     } catch (error) {
-      console.error("Xử lý thất bại:", error);
-      message.error("Xử lý thất bại");
+      console.error("Upload ảnh thất bại", error);
     }
   };
 
-  const handleChange = (info) => {
-    console.log(info);
-    // info.file.status = "uploading";
-    isChangAvt = true;
-    setImageUpload(info.file.originFileObj);
-    const imageRef = ref(storage, `Avatar/${user.id}`);
-    uploadBytes(imageRef, imageUpload).then(() => {
-      getDownloadURL(imageRef)
-        .then((url) => {
-          imgLink = url;
-          user.avatar = url;
-          console.log(url);
-        })
-        .then(() => {
-          message.success("Upload ảnh thành công");
-        });
-    });
-    info.file.status = "done";
+  const handleSave = (values) => {
+    console.log("Saved Data:", values);
+    message.success("Profile updated successfully!");
   };
 
   return (
-    <Form
-      {...formItemLayout}
-      form={form}
-      onFinish={onFinish}
-      style={{
-        maxWidth: 600,
-      }}
-      initialValues={user}
-      scrollToFirstError
-    >
-      <Form.Item
-        name="name"
-        label="Tên"
-        tooltip="Tên hiển thị của bạn?"
-        rules={[
-          {
-            required: true,
-            message: "Bạn chưa nhập tên!",
-            whitespace: true,
-          },
-        ]}
-      >
-        <Input />
-      </Form.Item>
-      <Form.Item
-        name="avatar"
-        label="Ảnh đại diện"
-        tooltip="Điền link ảnh vào đây!"
-      >
-        <Image width={100} src={user.avatar} />
-        <Upload onChange={handleChange} maxCount={1} listType="picture">
-          <Button icon={<ToTopOutlined />} style={{ marginLeft: "10px" }}>
-            Tải lên ảnh đại diện
-          </Button>
-        </Upload>
-      </Form.Item>
-      <Form.Item
-        name="email"
-        label="E-mail"
-        rules={[
-          {
-            type: "email",
-            message: "Không đúng định dạng email!",
-          },
-          {
-            required: true,
-            message: "Bạn chưa nhập E-mail!",
-          },
-        ]}
-      >
-        <Input />
-      </Form.Item>
-
-      <Form.Item
-        name="phone"
-        label="Số điện thoại"
-        rules={[
-          {
-            required: true,
-            message: "Bạn chưa điền số điện thoại!",
-            whitespace: true,
-          },
-        ]}
-      >
-        <Input />
-      </Form.Item>
-
-      <Form.Item
-        name="gender"
-        label="Giới tính"
-        rules={[
-          {
-            required: true,
-            message: "Bạn chưa nhập giới tính!",
-          },
-        ]}
-      >
-        <Select placeholder="Chọn giới tính">
-          <Option value="male">Nam</Option>
-          <Option value="female">Nữ</Option>
-          <Option value="other">Khác</Option>
-        </Select>
-      </Form.Item>
-
-      {Object.keys(user).length === 3 ? null : (
-        <>
-          <Form.Item name="status" label="Trạng thái">
-            <Select placeholder="Chọn trạng thái">
-              <Option value="active" style={{ color: "green" }}>
-                Hoạt động
-              </Option>
-              <Option value="inactive" style={{ color: "red" }}>
-                Khoá
-              </Option>
-            </Select>
-          </Form.Item>
-          <Form.Item name="rule" label="Quyền quản trị">
-            <Select placeholder="Chọn quyền quản trị">
-              <Option value="admin">Người quản trị</Option>
-              <Option value="user">Người dùng</Option>
-            </Select>
-          </Form.Item>
-        </>
-      )}
-
-      <Form.Item
-        name="address"
-        label="Địa chỉ"
-        rules={[
-          {
-            required: true,
-            message: "Bạn chưa điền địa chỉ!",
-            whitespace: true,
-          },
-        ]}
-      >
-        <Input />
-      </Form.Item>
-      <Form.Item
-        name="passWord"
-        label="Mật khẩu"
-        rules={[
-          {
-            required: true,
-            message: "Bạn chưa nhập mật khẩu!",
-          },
-        ]}
-        hasFeedback
-      >
-        <Input.Password />
-      </Form.Item>
-      {Object.keys(user).length === 3 ? (
-        <Form.Item
-          name="confirm"
-          label="Nhập lại mật khẩu"
-          dependencies={["passWord"]}
-          hasFeedback
-          rules={[
-            {
-              required: true,
-              message: "Chưa nhập lại mật khẩu!",
-            },
-            ({ getFieldValue }) => ({
-              validator(_, value) {
-                if (!value || getFieldValue("passWord") === value) {
-                  return Promise.resolve();
-                }
-                return Promise.reject(
-                  new Error("Mật khẩu không trùng khớp, vui lòng thử lại!")
-                );
-              },
-            }),
-          ]}
-        >
-          <Input.Password />
-        </Form.Item>
-      ) : null}
-
-      <Form.Item {...tailFormItemLayout}>
-        <Row justify="space-evenly">
-          <Col>
-            <Button type="primary" htmlType="submit">
-              {Object.keys(user).length === 3 ? "Tạo mới" : "Chỉnh sửa"}
+    <Card className="profile-container">
+      <Row gutter={[20, 20]}>
+        {/* Avatar + User Info */}
+        <Col xs={24} md={6} className="avatar-section">
+          <Image className="avatar" width={120} src={imageUrl} />
+          <h3>{user?.fullName || "User Name"}</h3>
+          <p>{user?.email || "user@example.com"}</p>
+          <Upload onChange={handleUpload} maxCount={1} showUploadList={false}>
+            <Button icon={<ToTopOutlined />} className="change-photo-btn">
+              Change Photo
             </Button>
-          </Col>
-          <Col>
-            <Button type="primary" danger>
-              <Link to="/users">Quay lại</Link>
-            </Button>
-          </Col>
-        </Row>
-      </Form.Item>
-    </Form>
+          </Upload>
+        </Col>
+
+        {/* Profile Form */}
+        <Col xs={24} md={12}>
+          <h2 className="form-title">Profile Settings</h2>
+          <Form form={form} layout="vertical" onFinish={handleSave}>
+            <Form.Item name="fullName" label="Full Name">
+              <Input />
+            </Form.Item>
+
+            <Form.Item name="email" label="Email">
+              <Input disabled />
+            </Form.Item>
+
+            {user.roleName === "JOB_SEEKER" ? (
+              <>
+                <Form.Item name="phone" label="Phone Number">
+                  <Input />
+                </Form.Item>
+
+                <Form.Item name="birthday" label="Birthday">
+                  <DatePicker style={{ width: "100%" }} />
+                </Form.Item>
+
+                <Form.Item name="gender" label="Gender">
+                  <Select>
+                    <Option value="M">Male</Option>
+                    <Option value="F">Female</Option>
+                  </Select>
+                </Form.Item>
+
+                <Form.Item name="maritalStatus" label="Marital Status">
+                  <Select>
+                    <Option value="S">Single</Option>
+                    <Option value="M">Married</Option>
+                    <Option value="D">Divorced</Option>
+                  </Select>
+                </Form.Item>
+              </>
+            ) : (
+              <>
+                <Form.Item name="companyName" label="Company Name">
+                  <Input disabled />
+                </Form.Item>
+
+                <Form.Item name="phone" label="Company Phone">
+                  <Input />
+                </Form.Item>
+
+                <Form.Item name="companyLocation" label="Company Location">
+                  <Input />
+                </Form.Item>
+              </>
+            )}
+
+            <Form.Item>
+              <Button type="primary" htmlType="submit" className="save-btn">
+                Save Profile
+              </Button>
+            </Form.Item>
+          </Form>
+        </Col>
+
+        {/* Experience Section */}
+        <Col xs={24} md={6} className="experience-section">
+          <h3>Edit Experience</h3>
+          <Form layout="vertical">
+            <Form.Item name="experience" label="Experience in Work">
+              <Input placeholder="Experience" />
+            </Form.Item>
+            <Form.Item name="details" label="Additional Details">
+              <Input.TextArea placeholder="Additional details" />
+            </Form.Item>
+          </Form>
+        </Col>
+      </Row>
+    </Card>
   );
 };
 

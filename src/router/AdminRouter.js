@@ -12,8 +12,13 @@ import CreateProduct from "../pages/CreateProduct";
 import JobPost from "../Admin/Body/JobPost";
 import Company from "../Admin/Body/Company";
 import Banner from "../Admin/Body/Banner";
-// import Review from "../Admin/Body/Review";
-// import Revenue from "../Admin/Body/Revenue";
+import Feedback from "../Admin/Body/Feedback";
+import Location from '../Admin/Body/Location';
+import District from "../Admin/Body/District";
+import JobCategories from "../Admin/Body/JobCategories";
+import JobseekerList from "../Admin/Body/JobseekerList";
+import Setting from "../Admin/Body/Setting";
+import Notification from "../Admin/Body/Notification";
 
 const AdminRouter = () => {
   return (
@@ -34,16 +39,29 @@ const AdminRouter = () => {
       {/* <Route path="/job-post/add" element={<CreateJobPost />} /> */}
 
       {/* Company routes */}
-      <Route path="/company" element={<Company />} />
+      <Route path="/company" element={<Company />} />   
+
+      {/* Notification routes */}
+      <Route path="/notification" element={<Notification />} />
 
       {/* Banner routes */}
       <Route path="/banner" element={<Banner />} />
 
       {/* Review routes */}
-      {/* <Route path="/review" element={<Review />} /> */}
+      <Route path="/feedback" element={<Feedback />} />
 
       {/* Revenue routes */}
       {/* <Route path="/revenue" element={<Revenue />} /> */}
+
+      {/* City management routes */}
+      <Route path="/cities" element={<Location />} />
+      <Route path="/cities/:cityId" element={<District />} />
+
+      {/* JobCategories routes */}
+      <Route path="/job-categories" element={<JobCategories />} />
+
+      {/* Jobseeker routes */}
+      <Route path="/jobseekers" element={<JobseekerList />} />
 
       {/* Conditional Route based on auth status */}
       {localStorage.getItem("auth") === "true" ? (
@@ -51,6 +69,9 @@ const AdminRouter = () => {
       ) : (
         <Route path="*" element={<Navigate to="/login" />} />
       )}
+
+      {/* Setting routes */}
+      <Route path="/setting" element={<Setting />} />
 
       {/* Other routes */}
       <Route path="/" element={<Home />} />
