@@ -37,7 +37,7 @@ const jobService = {
     },
 
     getAllJobseekers: async () => {
-        const url = "http://localhost:8000/api/info/web/resumes-all/?academicLevelId=&careerId=&cityId=&experienceId=&genderId=&jobTypeId=&kw=&maritalStatusId=&page=1&pageSize=10&positionId=&typeOfWorkplaceId=";
+        const url = "/info/web/resumes-all/?academicLevelId=&careerId=&cityId=&experienceId=&genderId=&jobTypeId=&kw=&maritalStatusId=&page=1&pageSize=10&positionId=&typeOfWorkplaceId=";
         return httpRequest.get(url);
     },
 
