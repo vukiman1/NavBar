@@ -9,7 +9,6 @@ const httpRequest = axios.create({
   },
   paramsSerializer: {
     serialize: (params) => {
-      console.log(process.env.REACT_APP_BASE_URL)
       return queryString.stringify(params, { arrayFormat: 'bracket' });
     },
   },

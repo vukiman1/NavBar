@@ -17,14 +17,16 @@ import {
     Tag,
     Divider,
     Empty,
-    Select 
+    Select, 
+    Upload
 } from "antd";
 import { 
     PlusOutlined, 
     EditOutlined, 
     DeleteOutlined, 
     FireOutlined,
-    InfoCircleOutlined
+    InfoCircleOutlined,
+    UploadOutlined
 } from '@ant-design/icons';
 import { bannerService } from "../../services/bannerService";
 
@@ -156,6 +158,7 @@ function Banner() {
     };
 
     const handleSubmit = async (values) => {
+        console.log(values)
         try {
             if (editingBanner) {
                 // await bannerService.updateBanner(editingBanner.id, values);
@@ -262,28 +265,22 @@ function Banner() {
                         </Select>
                     </Form.Item>
 
-                    <Form.Item
-                        name="imageUrl"
-                        label="URL Hình ảnh"
-                        rules={[{ required: true, message: 'Vui lòng nhập URL hình ảnh' }]}
-                        tooltip={{
-                            title: 'URL của hình ảnh banner',
-                            icon: <InfoCircleOutlined />
-                        }}
-                    >
-                        <Input placeholder="Nhập URL hình ảnh" />
-                    </Form.Item>
+                   
 
-                    <Form.Item
-                        name="imageMobileUrl"
-                        label="URL Hình ảnh Mobile"
-                        tooltip={{
-                            title: 'URL của hình ảnh banner cho mobile',
-                            icon: <InfoCircleOutlined />
-                        }}
-                    >
-                        <Input placeholder="Nhập URL hình ảnh mobile" />
-                    </Form.Item>
+                    
+                         <Upload
+                            action="http://localhost:8000/api/myjob/web/banner2"
+                            listType="picture"
+                            // defaultFileList={fileList}
+                        >
+                            <Button type="primary" icon={<UploadOutlined />}>
+                            Tải ảnh lên
+                            </Button>
+                        </Upload>
+       
+
+                        
+                   
 
                     <Form.Item
                         name="description"
@@ -301,16 +298,7 @@ function Banner() {
                     </Form.Item>
 
                     <div className="grid grid-cols-2 gap-4">
-                        <Form.Item
-                            name="buttonText"
-                            label="Nội dung nút"
-                            tooltip={{
-                                title: 'Văn bản hiển thị trên nút',
-                                icon: <InfoCircleOutlined />
-                            }}
-                        >
-                            <Input placeholder="Nhập nội dung nút" />
-                        </Form.Item>
+                      
 
                         <Form.Item
                             name="buttonLink"
@@ -324,36 +312,7 @@ function Banner() {
                         </Form.Item>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                        <Form.Item
-                            name="isShowButton"
-                            label="Hiển thị nút"
-                            valuePropName="checked"
-                            tooltip={{
-                                title: 'Bật/tắt hiển thị nút trên banner',
-                                icon: <InfoCircleOutlined />
-                            }}
-                        >
-                            <Switch />
-                        </Form.Item>
-
-                        <Form.Item
-                            name="descriptionLocation"
-                            label="Vị trí mô tả"
-                            rules={[{ required: true, message: 'Vui lòng nhập vị trí mô tả' }]}
-                            tooltip={{
-                                title: 'Vị trí hiển thị mô tả (1: Trên, 2: Giữa, 3: Dưới)',
-                                icon: <InfoCircleOutlined />
-                            }}
-                        >
-                            <Input 
-                                type="number" 
-                                min={1}
-                                max={3}
-                                placeholder="Nhập vị trí mô tả (1-3)" 
-                            />
-                        </Form.Item>
-                    </div>
+                            
 
                     <Form.Item
                         name="isActive"
