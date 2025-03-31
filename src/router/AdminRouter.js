@@ -19,6 +19,8 @@ import JobCategories from "../Admin/Body/JobCategories";
 import JobseekerList from "../Admin/Body/JobseekerList";
 import Setting from "../Admin/Body/Setting";
 import Notification from "../Admin/Body/Notification";
+import EditCompany from "../pages/EditCompany";
+import EditJobPost from "../pages/EditJobPost";
 
 const AdminRouter = () => {
   return (
@@ -35,11 +37,13 @@ const AdminRouter = () => {
 
       {/* JobPost routes */}
       <Route path="/job-post" element={<JobPost />} />
-      {/* <Route path="/job-post/edit/:id" element={<EditJobPost />} /> */}
+      <Route path="/job-post/edit/:id" element={<EditJobPost />} />
       {/* <Route path="/job-post/add" element={<CreateJobPost />} /> */}
 
       {/* Company routes */}
       <Route path="/company" element={<Company />} />   
+      <Route path="/company/edit/:id" element={<EditCompany />} />
+
 
       {/* Notification routes */}
       <Route path="/notification" element={<Notification />} />

@@ -14,6 +14,7 @@ import {
   message,
   Select,
   Input,
+  Popconfirm,
 } from "antd";
 import {
   CheckCircleOutlined,
@@ -95,6 +96,16 @@ const JobPost = () => {
     setIsModalVisible(true);
   };
 
+  const handleDeleteUser = async (id) => {
+    try {
+      // await userService.deleteUser(id);
+      message.success("Xóa thành công");
+      // loadUserList();
+    } catch (error) {
+      message.error("Xóa thất bại");
+    }
+  };
+
   const handleStatusChange = (value, record) => {
     handleUpdateStatus(record.id, value);
   };
@@ -162,19 +173,34 @@ const JobPost = () => {
       render: (_, record) => (
         <Space size="middle">
           <Tooltip title="Xem chi tiết">
-            <Button
+          <Link to={`/job-post/edit/${record.id}`}>
+         <Button
               icon={<EyeOutlined />}
-              type="link"
-              onClick={() => window.open(`/jobs/${record.slug}`, "_blank")}
+              type="primary"
+              ghost
             />
+          </Link>
+            
           </Tooltip>
-          <Tooltip title="Xóa">
-            <Button
+          <Tooltip title="primary">
+          <Popconfirm
+              title="Xoá tin?"
+              description="Bạn có chắc chắn muốn xoá tin này?"
+              onConfirm={() => handleDeleteUser(record.id)}
+              okText="Xoá"
+              cancelText="Huỷ"
+              placement="left"
+              okButtonProps={{ danger: true }}
+            >
+                <Button
               type="link"
               danger
+              
               icon={<DeleteOutlined />}
-              onClick={() => showDeleteConfirm(record.id)}
             />
+            </Popconfirm>
+            
+          
           </Tooltip>
         </Space>
       ),

@@ -1,0 +1,59 @@
+/* Container chính */
+.ant-card {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+.ant-card-head {
+    background: #fafafa;
+    border-bottom: 1px solid #f0f0f0;
+    font-weight: 500;
+}
+
+/* Thẻ thống kê */
+.ant-statistic-title {
+    font-size: 14px;
+    color: #888;
+    margin-bottom: 8px;
+}
+
+.ant-statistic-content {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+/* Biểu đồ */
+.recharts-wrapper {
+    margin: 0 auto;
+}
+
+/* Bộ lọc */
+.ant-select, .ant-picker {
+    margin-right: 16px;
+}
+
+/* Thông báo */
+.ant-list-item {
+    padding: 8px 0;
+}
+
+.ant-badge-status-processing {
+    margin-right: 8px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .ant-card {
+        margin-bottom: 16px;
+    }
+    .recharts-wrapper {
+        width: 100% !important;
+    }
+    .ant-statistic-content {
+        font-size: 20px;
+    }
+    .ant-select, .ant-picker {
+        width: 100% !important;
+        margin-bottom: 16px;
+    }
+}

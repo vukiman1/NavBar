@@ -1,45 +1,26 @@
 import { useEffect, useState } from "react";
 import { 
-    Table, 
-    Space, 
-    Button, 
-    message, 
-    Image, 
-    Modal, 
-    Form, 
-    Input, 
-    Switch, 
-    Card, 
-    Typography, 
-    Tooltip, 
-    Popconfirm,
-    Flex,
-    Tag,
-    Divider,
-    Empty,
-    Select, 
-    Upload
+    Table, Space, Button, message, Image, Modal, Form, Input, Switch, 
+    Card, Typography, Tooltip, Popconfirm, Flex, Tag, Divider, Empty, 
+    Select, Upload
 } from "antd";
 import { 
-    PlusOutlined, 
-    EditOutlined, 
-    DeleteOutlined, 
-    FireOutlined,
-    InfoCircleOutlined,
-    UploadOutlined
+    PlusOutlined, EditOutlined, DeleteOutlined, FireOutlined, 
+    InfoCircleOutlined, UploadOutlined 
 } from '@ant-design/icons';
 import { bannerService } from "../../services/bannerService";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
 
-function Banner() {
-    const [bannerList, setBannerList] = useState([]);
-    const [tableLoading, setTableLoading] = useState(false);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [editingBanner, setEditingBanner] = useState(null);
-    const [form] = Form.useForm();
-
+// Hàm render bảng (giữ nguyên)
+const renderBannerTable = (
+    bannerList, 
+    tableLoading, 
+    handleToggleBanner, 
+    handleEdit, 
+    handleDelete
+) => {
     const columns = [
         {
             title: 'ID',
@@ -115,6 +96,143 @@ function Banner() {
         },
     ];
 
+    return (
+        <Table 
+            columns={columns} 
+            dataSource={bannerList} 
+            loading={tableLoading}
+            rowKey="id"
+            locale={{
+                emptyText: <Empty 
+                    image={Empty.PRESENTED_IMAGE_SIMPLE} 
+                    description="Chưa có banner nào"
+                />
+            }}
+            pagination={{
+                pageSize: 5,
+                showSizeChanger: true,
+                showTotal: (total) => `Tổng số ${total} banner`,
+            }}
+        />
+    );
+};
+
+// Hàm render form trong modal
+const renderBannerForm = (form, editingBanner, handleSubmit, onCancel, imageUrl, setImageUrl) => {
+    const customRequest = async ({ file, onSuccess, onError }) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        try {
+            // console.log(object)
+            const resData = await bannerService.uploadBannerFile(formData);
+            console.log(resData.data.imageUrl);
+            setImageUrl(resData.data.imageUrl); // Lưu URL vào state
+            form.setFieldsValue({ imageUrl: resData.data.imageUrl }); // Cập nhật giá trị vào form
+            onSuccess("ok");
+            message.success("Tải ảnh lên thành công");
+        } catch (error) {
+            onError(error);
+            message.error("Tải ảnh lên thất bại");
+        }
+    };
+
+    return (
+        <Form
+            form={form}
+            layout="vertical"
+            onFinish={(values) => handleSubmit({ ...values, imageUrl })} // Gửi imageUrl cùng form
+            initialValues={editingBanner ? { ...editingBanner, imageUrl: imageUrl || editingBanner.imageUrl } : {
+                isShowButton: false,
+                descriptionLocation: 3,
+                isActive: false,
+                type: undefined, // Reset loại
+                description: "", // Reset mô tả
+                buttonLink: "", // Reset link
+                imageUrl: null // Reset ảnh
+            }}
+        >
+            <Form.Item
+                name="type"
+                label="Loại"
+                rules={[{ required: true, message: 'Vui lòng chọn loại' }]}
+                tooltip={{ title: 'Chọn loại banner', icon: <InfoCircleOutlined /> }}
+            >
+                <Select placeholder="Chọn loại">
+                    <Option value="BANNER">BANNER</Option>
+                    <Option value="POPUP">POPUP</Option>
+                </Select>
+            </Form.Item>
+
+            <Form.Item
+                name="imageUrl"
+                label="Hình ảnh"
+                rules={[{ required: true, message: 'Vui lòng tải lên hình ảnh' }]}
+            >
+                <Upload
+                    customRequest={customRequest}
+                    listType="picture"
+                    maxCount={1}
+                >
+                    <Button type="primary" icon={<UploadOutlined />}>
+                        Tải ảnh lên
+                    </Button>
+                </Upload>
+                {imageUrl && (
+                    <Image src={imageUrl} width={100} style={{ marginTop: 10 }} />
+                )}
+            </Form.Item>
+
+            <Form.Item
+                name="description"
+                label="Mô tả"
+                rules={[{ required: true, message: 'Vui lòng nhập mô tả' }]}
+                tooltip={{ title: 'Mô tả chi tiết về banner', icon: <InfoCircleOutlined /> }}
+            >
+                <Input.TextArea placeholder="Nhập mô tả" rows={4} />
+            </Form.Item>
+
+            <div className="grid grid-cols-2 gap-4">
+                <Form.Item
+                    name="buttonLink"
+                    label="Link điều hướng"
+                    tooltip={{ title: 'URL khi nhấn vào banner', icon: <InfoCircleOutlined /> }}
+                >
+                    <Input placeholder="Nhập link điều hướng" />
+                </Form.Item>
+            </div>
+
+            <Form.Item
+                name="isActive"
+                label="Trạng thái"
+                valuePropName="checked"
+                tooltip={{ title: 'Bật/tắt trạng thái banner', icon: <InfoCircleOutlined /> }}
+            >
+                <Switch />
+            </Form.Item>
+
+            <Divider />
+
+            <Form.Item className="flex justify-end mb-0">
+                <Space>
+                    <Button onClick={onCancel}>Hủy</Button>
+                    <Button type="primary" htmlType="submit">
+                        {editingBanner ? 'Cập nhật' : 'Thêm mới'}
+                    </Button>
+                </Space>
+            </Form.Item>
+        </Form>
+    );
+};
+
+// Component chính
+function Banner() {
+    const [bannerList, setBannerList] = useState([]);
+    const [tableLoading, setTableLoading] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingBanner, setEditingBanner] = useState(null);
+    const [imageUrl, setImageUrl] = useState(null); // State để lưu đường dẫn ảnh
+    const [form] = Form.useForm();
     const loadBannerList = async () => {
         setTableLoading(true);
         try {
@@ -143,13 +261,16 @@ function Banner() {
 
     const handleEdit = (banner) => {
         setEditingBanner(banner);
-        form.setFieldsValue(banner);
+        setImageUrl(banner.imageUrl); // Load ảnh hiện tại khi edit
+        form.setFieldsValue(banner); // Đặt giá trị cho form
         setIsModalOpen(true);
     };
 
     const handleDelete = async (id) => {
         try {
-            message.success("Xóa banner thành công");
+            const deleteBanner = await bannerService.deleteBanner(id);
+            console.log(deleteBanner)
+            message.success(deleteBanner.message);
             loadBannerList();
         } catch (error) {
             console.error("Error deleting banner:", error);
@@ -158,18 +279,22 @@ function Banner() {
     };
 
     const handleSubmit = async (values) => {
-        console.log(values)
+        console.log("Form values:", values);
         try {
             if (editingBanner) {
-                // await bannerService.updateBanner(editingBanner.id, values);
+                console.log(editingBanner.id)
+                await bannerService.updateBanner(editingBanner.id, values);
                 message.success("Cập nhật banner thành công");
             } else {
                 // await bannerService.createBanner(values);
+                const banner = await bannerService.createBanner(values);
+                console.log("Banner created:", banner);
                 message.success("Thêm banner thành công");
             }
             setIsModalOpen(false);
-            form.resetFields();
+            form.resetFields(); // Reset form sau khi submit
             setEditingBanner(null);
+            setImageUrl(null); // Reset ảnh sau khi submit
             loadBannerList();
         } catch (error) {
             console.error("Error saving banner:", error);
@@ -181,14 +306,19 @@ function Banner() {
         loadBannerList();
     }, []);
 
+    const handleCancel = () => {
+        setIsModalOpen(false);
+        setEditingBanner(null);
+        setImageUrl(null); // Reset ảnh khi hủy
+        form.resetFields(); // Reset form khi hủy
+    };
+
     return (
         <Card bordered={false}>
             <Flex vertical gap="middle">
                 <Flex align="center" justify="space-between">
                     <Flex align="center" gap="small">
-                        <Title level={4} style={{ margin: 0 }}>
-                            Quản lý Banner
-                        </Title>
+                        <Title level={4} style={{ margin: 0 }}>Quản lý Banner</Title>
                         <Tag color="blue" icon={<FireOutlined />}>
                             {bannerList?.length || 0} banner
                         </Tag>
@@ -197,8 +327,9 @@ function Banner() {
                         type="primary"
                         icon={<PlusOutlined />}
                         onClick={() => {
-                            setEditingBanner(null);
-                            form.resetFields();
+                            setEditingBanner(null); // Đặt chế độ thêm mới
+                            setImageUrl(null); // Reset ảnh
+                            form.resetFields(); // Reset form trước khi mở modal
                             setIsModalOpen(true);
                         }}
                     >
@@ -206,151 +337,28 @@ function Banner() {
                     </Button>
                 </Flex>
 
-                <Table 
-                    columns={columns} 
-                    dataSource={bannerList} 
-                    loading={tableLoading}
-                    rowKey="id"
-                    locale={{
-                        emptyText: <Empty 
-                            image={Empty.PRESENTED_IMAGE_SIMPLE} 
-                            description="Chưa có banner nào"
-                        />
-                    }}
-                    pagination={{
-                        pageSize: 5,
-                        showSizeChanger: true,
-                        showTotal: (total) => `Tổng số ${total} banner`,
-                    }}
-                />
+                {renderBannerTable(
+                    bannerList,
+                    tableLoading,
+                    handleToggleBanner,
+                    handleEdit,
+                    handleDelete
+                )}
             </Flex>
 
             <Modal
-                title={
-                    <Title level={4} style={{ margin: 0 }}>
-                        {editingBanner ? "Chỉnh sửa Banner" : "Thêm Banner Mới"}
-                    </Title>
-                }
+                title={<Title level={4} style={{ margin: 0 }}>
+                    {editingBanner ? "Chỉnh sửa Banner" : "Thêm Banner Mới"}
+                </Title>}
                 open={isModalOpen}
-                onCancel={() => {
-                    setIsModalOpen(false);
-                    setEditingBanner(null);
-                    form.resetFields();
-                }}
+                onCancel={handleCancel}
                 footer={null}
                 width={700}
             >
-                <Divider />
-                <Form
-                    form={form}
-                    layout="vertical"
-                    onFinish={handleSubmit}
-                    initialValues={{
-                        isShowButton: false,
-                        descriptionLocation: 3
-                    }}
-                >
-                    <Form.Item
-                        name="type"
-                        label="Loại"
-                        rules={[{ required: true, message: 'Vui lòng chọn loại' }]}
-                        tooltip={{
-                            title: 'Chọn loại banner',
-                            icon: <InfoCircleOutlined />
-                        }}
-                    >
-                        <Select placeholder="Chọn loại">
-                            <Option value="BANNER">BANNER</Option>
-                            <Option value="POPUP">POPUP</Option>
-                        </Select>
-                    </Form.Item>
-
-                   
-
-                    
-                         <Upload
-                            action="http://localhost:8000/api/myjob/web/banner2"
-                            listType="picture"
-                            // defaultFileList={fileList}
-                        >
-                            <Button type="primary" icon={<UploadOutlined />}>
-                            Tải ảnh lên
-                            </Button>
-                        </Upload>
-       
-
-                        
-                   
-
-                    <Form.Item
-                        name="description"
-                        label="Mô tả"
-                        rules={[{ required: true, message: 'Vui lòng nhập mô tả' }]}
-                        tooltip={{
-                            title: 'Mô tả chi tiết về banner',
-                            icon: <InfoCircleOutlined />
-                        }}
-                    >
-                        <Input.TextArea 
-                            placeholder="Nhập mô tả" 
-                            rows={4}
-                        />
-                    </Form.Item>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      
-
-                        <Form.Item
-                            name="buttonLink"
-                            label="Link nút"
-                            tooltip={{
-                                title: 'URL khi nhấn vào nút',
-                                icon: <InfoCircleOutlined />
-                            }}
-                        >
-                            <Input placeholder="Nhập link nút" />
-                        </Form.Item>
-                    </div>
-
-                            
-
-                    <Form.Item
-                        name="isActive"
-                        label="Trạng thái"
-                        valuePropName="checked"
-                        tooltip={{
-                            title: 'Bật/tắt trạng thái banner',
-                            icon: <InfoCircleOutlined />
-                        }}
-                    >
-                        <Switch />
-                    </Form.Item>
-
-                    <Divider />
-
-                    <Form.Item className="flex justify-end mb-0">
-                        <Space>
-                            <Button 
-                                onClick={() => {
-                                    setIsModalOpen(false);
-                                    setEditingBanner(null);
-                                    form.resetFields();
-                                }}
-                            >
-                                Hủy
-                            </Button>
-                            <Button 
-                                type="primary" 
-                                htmlType="submit"
-                            >
-                                {editingBanner ? 'Cập nhật' : 'Thêm mới'}
-                            </Button>
-                        </Space>
-                    </Form.Item>
-                </Form>
+                {renderBannerForm(form, editingBanner, handleSubmit, handleCancel, imageUrl, setImageUrl)}
             </Modal>
         </Card>
-    )
+    );
 }
 
 export default Banner;

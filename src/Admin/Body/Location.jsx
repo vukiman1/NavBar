@@ -108,7 +108,7 @@ function Location() {
             key: 'id',
         },
         {
-            title: 'Tên thành phố',
+            title: 'Tên tỉnh/thành phố',
             dataIndex: 'name',
             key: 'name',
             render: (text, record) => (
@@ -147,13 +147,13 @@ function Location() {
             {/* Header */}
             <Flex align="center" justify="space-between">
                 <Flex align="center" gap="small">
-                    <Title level={4} style={{ margin: 0 }}>Quản lý Thành phố</Title>
+                    <Title level={4} style={{ margin: 0 }}>Quản lý Tỉnh/Thành phố</Title>
                     <Tag color="blue" icon={<FireOutlined />}>
                         {locationList?.length || 0} thành phố
                     </Tag>
                 </Flex>
                 <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
-                    Thêm Thành phố
+                    Thêm Tỉnh/Thành phố
                 </Button>
             </Flex>
 
@@ -176,7 +176,7 @@ function Location() {
 
             {/* Modal Thêm/Sửa */}
             <Modal
-                title={editingCity ? "Chỉnh sửa Thành phố" : "Thêm Thành phố"}
+                title={editingCity ? "Chỉnh sửa  Tỉnh/Thành phố" : "Thêm  Tỉnh/Thành phố"}
                 open={modalVisible}
                 onCancel={closeModal}
                 onOk={handleSave}
@@ -185,7 +185,7 @@ function Location() {
             >
                 <Form form={form} layout="vertical">
                     <Form.Item
-                        label="Tên Thành phố"
+                        label="Tên Tỉnh/Thành phố"
                         name="name"
                         rules={[{ required: true, message: "Vui lòng nhập tên thành phố!" }]}
                     >
