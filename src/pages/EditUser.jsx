@@ -223,7 +223,7 @@ const EditUser = () => {
   return (
     <div className="edit-user-container">
       <Breadcrumb className="breadcrumb-navigation">
-        <Breadcrumb.Item href="/dashboard">
+        <Breadcrumb.Item href="/">
           <HomeOutlined /> Dashboard
         </Breadcrumb.Item>
         <Breadcrumb.Item href="/users">

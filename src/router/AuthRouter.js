@@ -5,7 +5,7 @@ import Admin from "../Admin/Admin";
 import LoginPage from "../pages/Login";
 
 const AuthRouter = () => {
-  const authLogin = localStorage.getItem("auth");
+  const authLogin = localStorage.getItem("user");
   console.log(authLogin);
   return (
     <Routes>

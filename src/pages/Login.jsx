@@ -20,7 +20,7 @@ const Login = () => {
   useEffect(() => {
     const userData = localStorage.getItem("user")
     if (userData) {
-      navigate("/dashboard")
+      navigate("/")
     }
   }, [navigate])
 
@@ -141,7 +141,6 @@ const Login = () => {
                 placeholder="Email"
                 autoComplete="email"
                 className="login-input"
-                defaultValue="admin@365.com"
               />
             </Form.Item>
 
@@ -151,7 +150,6 @@ const Login = () => {
                 placeholder="Mật khẩu"
                 iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
                 className="login-input"
-                defaultValue="admin"
               />
             </Form.Item>
 
