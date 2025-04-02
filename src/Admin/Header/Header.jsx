@@ -63,6 +63,7 @@ const HeaderBar = () => {
           className="dropdown-item"
           onClick={() => {
             localStorage.removeItem("user")
+            localStorage.removeItem("auth")
             navigate("/login")
           }}
         >

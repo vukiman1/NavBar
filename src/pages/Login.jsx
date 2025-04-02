@@ -35,8 +35,11 @@ const Login = () => {
       // Store user data
       if (rememberMe) {
         localStorage.setItem("user", JSON.stringify(response))
+        localStorage.setItem("auth", true)
       } else {
         sessionStorage.setItem("user", JSON.stringify(response))
+        localStorage.setItem("auth", true)
+
       }
 
       message.success("Đăng nhập thành công!")
