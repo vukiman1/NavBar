@@ -1,59 +1,174 @@
-/* Container chính */
-.ant-card {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
-}
-
-.ant-card-head {
-    background: #fafafa;
-    border-bottom: 1px solid #f0f0f0;
-    font-weight: 500;
-}
-
-/* Thẻ thống kê */
-.ant-statistic-title {
-    font-size: 14px;
-    color: #888;
-    margin-bottom: 8px;
-}
-
-.ant-statistic-content {
-    font-size: 24px;
-    font-weight: bold;
-}
-
-/* Biểu đồ */
-.recharts-wrapper {
+/* Dashboard styles */
+.dashboard-container {
+    padding: 24px;
+    max-width: 1400px;
     margin: 0 auto;
-}
-
-/* Bộ lọc */
-.ant-select, .ant-picker {
-    margin-right: 16px;
-}
-
-/* Thông báo */
-.ant-list-item {
-    padding: 8px 0;
-}
-
-.ant-badge-status-processing {
-    margin-right: 8px;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .ant-card {
-        margin-bottom: 16px;
+    background-color: #f0f2f5;
+    min-height: 100vh;
+  }
+  
+  .dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  
+  .dashboard-title {
+    margin-bottom: 0;
+  }
+  
+  .dashboard-actions {
+    display: flex;
+    gap: 8px;
+  }
+  
+  .filters-card {
+    margin-bottom: 24px;
+    border-radius: 8px;
+    background-color: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  }
+  
+  .dashboard-tabs .ant-tabs-nav {
+    margin-bottom: 16px;
+  }
+  
+  .stats-row {
+    margin-bottom: 24px;
+  }
+  
+  .stat-card {
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    height: 100%;
+  }
+  
+  .stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  }
+  
+  .stat-card-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .stat-info {
+    flex: 1;
+  }
+  
+  .stat-trend {
+    margin-top: 8px;
+    font-size: 14px;
+  }
+  
+  .stat-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background-color: #f5f5f5;
+  }
+  
+  .dashboard-card {
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    height: 100%;
+    transition: all 0.3s ease;
+  }
+  
+  .dashboard-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  }
+  
+  .notification-list {
+    max-height: 350px;
+    overflow-y: auto;
+  }
+  
+  .notification-item {
+    padding: 12px 0;
+    transition: all 0.3s ease;
+  }
+  
+  .notification-item:hover {
+    background-color: #f5f5f5;
+  }
+  
+  .notification-avatar {
+    background-color: #f0f2f5;
+  }
+  
+  .top-jobs-list {
+    max-height: 350px;
+    overflow-y: auto;
+  }
+  
+  .top-job-item {
+    padding: 12px 0;
+    transition: all 0.3s ease;
+  }
+  
+  .top-job-item:hover {
+    background-color: #f5f5f5;
+  }
+  
+  .rank-avatar {
+    font-weight: bold;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .dashboard-header {
+      flex-direction: column;
+      align-items: flex-start;
     }
-    .recharts-wrapper {
-        width: 100% !important;
+  
+    .dashboard-actions {
+      margin-top: 16px;
+      width: 100%;
+      justify-content: flex-end;
     }
-    .ant-statistic-content {
-        font-size: 20px;
+  
+    .stat-card-content {
+      flex-direction: column;
     }
-    .ant-select, .ant-picker {
-        width: 100% !important;
-        margin-bottom: 16px;
+  
+    .stat-icon {
+      margin-top: 16px;
     }
-}
+  }
+  
+  /* Dark mode support */
+  body.dark .dashboard-container {
+    background-color: #141414;
+  }
+  
+  body.dark .filters-card,
+  body.dark .stat-card,
+  body.dark .dashboard-card {
+    background-color: #1f1f1f;
+    border-color: #303030;
+  }
+  
+  body.dark .stat-icon {
+    background-color: #141414;
+  }
+  
+  body.dark .notification-item:hover,
+  body.dark .top-job-item:hover {
+    background-color: #141414;
+  }
+  
+  body.dark .notification-avatar {
+    background-color: #141414;
+  }
+  
+  

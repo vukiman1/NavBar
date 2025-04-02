@@ -21,13 +21,18 @@ const jobService = {
         return httpRequest.get(url);
     },
 
-    uplaodCareerFile(file) {
+    uploadCareerFile(file) {
         const url = "common/career/file"
         return httpRequest.post(url, file, {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
         });
+    },
+
+    updateJobPost(id,data) {
+        const url = `admin-job/update/${id}`;
+        return httpRequest.patch(url, data);
     },
 
     createJobCategory: async (data) => {

@@ -1,0 +1,235 @@
+/* Users page styles */
+.users-container {
+    padding: 24px;
+    background-color: #f0f2f5;
+    min-height: 100vh;
+  }
+  
+  .users-card {
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  }
+  
+  .users-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  
+  .users-title {
+    margin-bottom: 0;
+  }
+  
+  .users-actions {
+    display: flex;
+    gap: 8px;
+  }
+  
+  .stats-row {
+    margin-bottom: 24px;
+  }
+  
+  .stat-card {
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    height: 100%;
+  }
+  
+  .stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  .search-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  
+  .search-input {
+    width: 300px;
+    max-width: 100%;
+  }
+  
+  .result-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  
+  .loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 0;
+  }
+  
+  .users-table {
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  
+  .users-table .ant-table-thead > tr > th {
+    background-color: #f5f5f5;
+    font-weight: 600;
+  }
+  
+  .user-info {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .user-meta {
+    margin-top: 4px;
+  }
+  
+  .inactive-text {
+    color: #00000040;
+    text-decoration: line-through;
+  }
+  
+  .inactive-avatar {
+    opacity: 0.5;
+    filter: grayscale(1);
+  }
+  
+  .action-buttons {
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+  }
+  
+  .action-buttons:hover {
+    opacity: 1;
+  }
+  
+  .action-button {
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+  
+  /* Card view styles */
+  .user-card {
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    overflow: hidden;
+  }
+  
+  .user-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  }
+  
+  .inactive-card {
+    opacity: 0.7;
+    background-color: #f5f5f5;
+  }
+  
+  .user-card-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px 0;
+  }
+  
+  .user-card-avatar {
+    margin-bottom: 16px;
+  }
+  
+  .user-card-info {
+    text-align: center;
+    width: 100%;
+  }
+  
+  .user-card-tags {
+    margin-top: 12px;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  /* User detail drawer styles */
+  .user-detail {
+    padding: 0 16px;
+  }
+  
+  .user-detail-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  
+  .user-detail-title {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .detail-item {
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .users-header,
+    .search-bar,
+    .result-info {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  
+    .users-actions,
+    .search-bar > .ant-space {
+      margin-top: 16px;
+      width: 100%;
+    }
+  
+    .search-input {
+      width: 100%;
+    }
+  }
+  
+  /* Dark mode support */
+  body.dark .users-container {
+    background-color: #141414;
+  }
+  
+  body.dark .users-card,
+  body.dark .stat-card {
+    background-color: #1f1f1f;
+    border-color: #303030;
+  }
+  
+  body.dark .users-table .ant-table-thead > tr > th {
+    background-color: #1f1f1f;
+  }
+  
+  body.dark .inactive-card {
+    background-color: #141414;
+  }
+  
+  body.dark .inactive-text {
+    color: rgba(255, 255, 255, 0.25);
+  }
+  
+  

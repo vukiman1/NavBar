@@ -1,53 +1,78 @@
-import { createContext, useState, useEffect } from "react";
+"use client"
 
-export const DataContext = createContext({});
+import { createContext, useState, useEffect } from "react"
 
-export const DataContextProvider = ({ children }) => {
-  const [currentTheme, setCurrentTheme] = useState("light");
-  const [collapsed, setCollapsed] = useState(false);
-  const [isLogin, setIsLogin] = useState(null);
+const DataContext = createContext({})
 
-  // Check localStorage for "auth" and set "isLogin" accordingly
+const DataProvider = ({ children }) => {
+  const [collapsed, setCollapsed] = useState(false)
+  const [currentTheme, setCurrentTheme] = useState("light") // Add this state
+  const [themeStyle, setThemeStyle] = useState({
+    backgroundColor: "#fff",
+    color: "#000",
+  })
+  const [isLogin, setIsLogin] = useState(false)
+
+  // Check login status on component mount
   useEffect(() => {
-    const storedAuth = localStorage.getItem("auth");
-    if (storedAuth === null) {
-      localStorage.setItem("auth", "false");
-      setIsLogin(false);
+    const user = localStorage.getItem("user")
+    if (user) {
+      setIsLogin(true)
+    }
+
+    // Load saved theme preference
+    const savedTheme = localStorage.getItem("theme")
+    if (savedTheme) {
+      setCurrentTheme(savedTheme)
+      updateThemeStyle(savedTheme)
+    }
+  }, [])
+
+  // Update theme styles based on theme name
+  const updateThemeStyle = (themeName) => {
+    if (themeName === "dark") {
+      setThemeStyle({
+        backgroundColor: "#333",
+        color: "#fff",
+      })
+      document.body.classList.add("dark")
     } else {
-      setIsLogin(storedAuth === "true");
+      setThemeStyle({
+        backgroundColor: "#fff",
+        color: "#000",
+      })
+      document.body.classList.remove("dark")
     }
-  }, []);
+  }
 
-  useEffect(() => {
-    if (isLogin !== null) {
-      localStorage.setItem("auth", isLogin.toString());
-    }
-  }, [isLogin]);
+  const toggleTheme = () => {
+    const newTheme = currentTheme === "light" ? "dark" : "light"
+    setCurrentTheme(newTheme)
+    updateThemeStyle(newTheme)
+    localStorage.setItem("theme", newTheme) // Save theme preference
+  }
 
-  const themeStyle = {
-    night: {
-      backgroundColor: "#001529",
-      color: "#fff",
-    },
-    day: {
-      backgroundColor: "#fff",
-      color: "#001529",
-    },
-  };
+  // Handle logout
+  const logout = () => {
+    localStorage.removeItem("user")
+    sessionStorage.removeItem("user")
+    setIsLogin(false)
+  }
 
-  return (
-    <DataContext.Provider
-      value={{
-        currentTheme,
-        setCurrentTheme,
-        themeStyle: themeStyle[currentTheme === "light" ? "day" : "night"],
-        collapsed,
-        setCollapsed,
-        isLogin,
-        setIsLogin,
-      }}
-    >
-      {children}
-    </DataContext.Provider>
-  );
-};
+  const value = {
+    collapsed,
+    setCollapsed,
+    themeStyle,
+    currentTheme,
+    setCurrentTheme, // Export this function
+    toggleTheme,
+    isLogin,
+    setIsLogin,
+    logout,
+  }
+
+  return <DataContext.Provider value={value}>{children}</DataContext.Provider>
+}
+
+export { DataContext, DataProvider }
+

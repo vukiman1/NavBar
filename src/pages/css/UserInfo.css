@@ -1,0 +1,143 @@
+/* User Info Page Styles */
+.user-info-container {
+    padding: 24px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  
+  .user-info-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 24px;
+    gap: 16px;
+  }
+  
+  .back-button {
+    display: flex;
+    align-items: center;
+  }
+  
+  .page-title {
+    margin: 0;
+  }
+  
+  .user-info-loading,
+  .user-info-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    gap: 16px;
+  }
+  
+  /* User Profile Card */
+  .user-profile-card {
+    margin-bottom: 24px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  }
+  
+  .user-profile-header {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  
+  .user-avatar-container {
+    position: relative;
+  }
+  
+  .user-avatar {
+    background-color: #1890ff;
+  }
+  
+  .user-info-content {
+    flex: 1;
+    min-width: 250px;
+  }
+  
+  .user-name-container {
+    margin-bottom: 12px;
+  }
+  
+  .user-name {
+    margin-bottom: 8px !important;
+  }
+  
+  .user-contact {
+    color: rgba(0, 0, 0, 0.65);
+  }
+  
+  .user-contact .icon {
+    margin-right: 8px;
+    color: rgba(0, 0, 0, 0.45);
+  }
+  
+  .user-actions {
+    display: flex;
+    align-items: center;
+  }
+  
+  /* User Details Card */
+  .user-details-card {
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  }
+  
+  .user-descriptions {
+    margin-top: 16px;
+  }
+  
+  .action-buttons {
+    margin-top: 24px;
+    display: flex;
+    justify-content: flex-end;
+  }
+  
+  /* Responsive Adjustments */
+  @media (max-width: 768px) {
+    .user-profile-header {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+  
+    .user-info-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+  
+    .user-actions {
+      width: 100%;
+      justify-content: center;
+      margin-top: 16px;
+    }
+  
+    .action-buttons {
+      justify-content: center;
+    }
+  }
+  
+  /* Dark Mode Support */
+  body.dark .user-profile-card,
+  body.dark .user-details-card {
+    background-color: #1f1f1f;
+    border-color: #303030;
+  }
+  
+  body.dark .user-contact {
+    color: rgba(255, 255, 255, 0.65);
+  }
+  
+  body.dark .user-contact .icon {
+    color: rgba(255, 255, 255, 0.45);
+  }
+  
+  body.dark .ant-descriptions-item-label {
+    background-color: #141414;
+  }
+  
+  
