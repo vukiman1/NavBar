@@ -195,7 +195,7 @@ function EditJobPost() {
       await jobService.updateJobPost(id, updatedData)
       console.log("Updated job post data:", updatedData)
       message.success("Cập nhật bài đăng tuyển dụng thành công!")
-      navigate("/job-posts")
+      navigate(`/job-post/${id}`)
     } catch (error) {
       message.error("Cập nhật bài đăng tuyển dụng thất bại!")
       console.error(error)

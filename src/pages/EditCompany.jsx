@@ -20,7 +20,6 @@ import {
   Tag,
 } from "antd"
 import {
-  UploadOutlined,
   BuildOutlined,
   GlobalOutlined,
   MailOutlined,
@@ -36,9 +35,13 @@ import {
   SaveOutlined,
   RollbackOutlined,
   InfoCircleOutlined,
+  EditOutlined,
+  LoadingOutlined,
+  PlusOutlined,
 } from "@ant-design/icons"
 import moment from "moment"
 import companyService from "../services/companyService"
+import { bannerService } from "../services/bannerService"
 
 const { Title, Text, Paragraph } = Typography
 const { TabPane } = Tabs
@@ -52,67 +55,17 @@ function EditCompany() {
   const [fileList, setFileList] = useState([])
   const [coverFileList, setCoverFileList] = useState([])
   const [activeTab, setActiveTab] = useState("1")
+  const [imageUrl, setImageUrl] = useState("")
+  const [coverImageUrl, setCoverImageUrl] = useState("")
+  const [uploading, setUploading] = useState(false)
+  const [uploadingCover, setUploadingCover] = useState(false)
+  const [previewImage, setPreviewImage] = useState(null)
+  const [previewCoverImage, setPreviewCoverImage] = useState(null)
 
-  // Giả lập API call để lấy dữ liệu công ty
+  // Fetch company data
   const fetchCompanyData = async () => {
     setLoading(true)
     try {
-      // Thay bằng API thực tế của bạn, ví dụ: await companyService.getCompanyById(id)
-      const response = {
-        id: 4,
-        companyName: "CÔNG TY TNHH NASHTECH VIỆT NAM",
-        slug: "cong-ty-tnhh-nashtech-viet-nam",
-        companyImageUrl: "https://cdn.timviectop.com/img/2022-07-13/62cf3cb433c609921371f335.png",
-        companyImagePublicId: null,
-        companyCoverImageUrl: "https://cdn1.vieclam24h.vn/tvn/images/assets/img/generic_18.jpg",
-        companyCoverImagePublicId: null,
-        facebookUrl: null,
-        youtubeUrl: null,
-        linkedinUrl: null,
-        companyEmail: "nashtech@gmail.com",
-        companyPhone: "0213562425",
-        websiteUrl: "https://nashtechglobal.com",
-        taxCode: "0301483946 ",
-        since: "2017-01-01T17:00:00.000Z",
-        fieldOperation: "Công nghệ thông tin ",
-        description: null,
-        employeeSize: 6,
-        createAt: "2025-03-16T10:19:26.972Z",
-        updateAt: "2025-03-16T10:19:26.972Z",
-        location: {
-          id: 17,
-          address: "Quận 1, Thành phố Hồ Chí Minh",
-          lat: null,
-          lng: null,
-          createAt: "2025-03-16T10:19:23.550Z",
-          updateAt: "2025-03-16T10:19:23.550Z",
-          city: {
-            id: 30,
-            name: "TP.Hồ Chí Minh",
-            createAt: "2025-03-04T08:22:31.657Z",
-            updateAt: "2025-03-04T08:22:31.657Z",
-          },
-        },
-        user: {
-          id: 16,
-          email: "hr@nashtech.com",
-          fullName: "NashTech",
-          password: "$2b$10$yRHs68qDHeSU6XRSBwVLIOGtKuNjgAe/kDWjzaoHp1ZGg4I1ziqcu",
-          isActive: true,
-          isVerifyEmail: true,
-          isSupperuser: false,
-          isStaff: false,
-          hasCompany: true,
-          roleName: "EMPLOYER",
-          money: 0,
-          avatarUrl: "https://res.cloudinary.com/myjob/image/upload/c_scale,h_200,w_200/myjob/Avatar/defaultAvatar.jpg",
-          avatarPublicId: null,
-          lastLogin: "2025-03-16T10:19:50.583Z",
-          createAt: "2025-03-16T10:19:23.531Z",
-          updateAt: "2025-03-16T10:19:50.587Z",
-        },
-      }
-
       const resData = await companyService.getCompanyDetails(id)
       console.log(resData)
       setCompanyData(resData)
@@ -120,6 +73,14 @@ function EditCompany() {
         ...resData,
         since: resData.since ? moment(resData.since) : null,
       })
+
+      // Set image URLs
+      setImageUrl(resData.companyImageUrl)
+      setPreviewImage(resData.companyImageUrl)
+      setCoverImageUrl(resData.companyCoverImageUrl)
+      setPreviewCoverImage(resData.companyCoverImageUrl)
+
+      // Set file lists for uploads
       setFileList(
         resData.companyImageUrl
           ? [
@@ -156,18 +117,22 @@ function EditCompany() {
     fetchCompanyData()
   }, [id])
 
-  // Xử lý submit form
+  // Handle form submission
   const onFinish = async (values) => {
     setLoading(true)
     try {
       const updatedData = {
         ...values,
         since: values.since ? values.since.toISOString() : null,
+        companyImageUrl: imageUrl,
+        companyCoverImageUrl: coverImageUrl,
       }
+
+      await companyService.updateCompany(updatedData)
       // Thay bằng API thực tế của bạn, ví dụ: await companyService.updateCompany(id, updatedData)
-      console.log("Updated company data:", updatedData)
+      console.log(updatedData)
       message.success("Cập nhật công ty thành công!")
-      navigate("/companies") // Quay lại danh sách công ty
+      navigate(`/company/edit/${id}`) // Quay lại danh sách công ty
     } catch (error) {
       message.error("Cập nhật công ty thất bại!")
       console.error(error)
@@ -176,19 +141,51 @@ function EditCompany() {
     }
   }
 
-  // Xử lý upload ảnh công ty
-  const handleCompanyImageUpload = ({ fileList }) => {
-    setFileList(fileList)
-    if (fileList.length > 0 && fileList[0].status === "done") {
-      form.setFieldsValue({ companyImageUrl: fileList[0].url })
+  // Handle company logo upload
+  const customLogoRequest = async ({ file, onSuccess, onError }) => {
+    setUploading(true)
+    const formData = new FormData()
+    formData.append("file", file)
+
+    try {
+      const resData = await bannerService.uploadBannerFile(formData)
+      const imageUrl = resData.data.imageUrl
+
+      setPreviewImage(imageUrl)
+      setImageUrl(imageUrl)
+      form.setFieldsValue({ companyImageUrl: imageUrl })
+      onSuccess("ok")
+      message.success("Tải logo lên thành công")
+    } catch (error) {
+      console.error("Error uploading file:", error)
+      onError(error)
+      message.error("Tải logo lên thất bại")
+    } finally {
+      setUploading(false)
     }
   }
 
-  // Xử lý upload ảnh bìa
-  const handleCoverImageUpload = ({ fileList }) => {
-    setCoverFileList(fileList)
-    if (fileList.length > 0 && fileList[0].status === "done") {
-      form.setFieldsValue({ companyCoverImageUrl: fileList[0].url })
+  // Handle cover image upload
+  const customCoverRequest = async ({ file, onSuccess, onError }) => {
+    setUploadingCover(true)
+    const formData = new FormData()
+    formData.append("file", file)
+
+    try {
+      const resData = await bannerService.uploadBannerFile(formData)
+      const imageUrl = resData.data.imageUrl
+
+      setPreviewCoverImage(imageUrl)
+      setCoverImageUrl(imageUrl)
+      form.setFieldsValue({ companyCoverImageUrl: imageUrl })
+      onSuccess("ok")
+      message.success("Tải ảnh bìa lên thành công")
+    } catch (error) {
+      console.error("Error uploading cover file:", error)
+      onError(error)
+      message.error("Tải ảnh bìa lên thất bại")
+    } finally {
+      setUploadingCover(false)
     }
   }
 
@@ -231,7 +228,7 @@ function EditCompany() {
           className="company-cover"
           style={{
             height: 200,
-            backgroundImage: `url(${companyData?.companyCoverImageUrl})`,
+            backgroundImage: `url(${previewCoverImage || companyData?.companyCoverImageUrl})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
             position: "relative",
@@ -265,7 +262,7 @@ function EditCompany() {
               }}
             >
               <img
-                src={companyData?.companyImageUrl || "/placeholder.svg"}
+                src={previewImage || companyData?.companyImageUrl || "/placeholder.svg"}
                 alt={companyData?.companyName}
                 style={{ width: "100%", height: "100%", objectFit: "contain" }}
               />
@@ -438,19 +435,24 @@ function EditCompany() {
                         tooltip="Logo công ty nên có kích thước vuông và nền trong suốt"
                       >
                         <Upload
+                          customRequest={customLogoRequest}
                           listType="picture-card"
                           fileList={fileList}
-                          onChange={handleCompanyImageUpload}
+                          onChange={({ fileList }) => setFileList(fileList)}
                           maxCount={1}
-                          showUploadList={{
-                            showPreviewIcon: true,
-                            showRemoveIcon: true,
-                          }}
+                          showUploadList={false}
                         >
-                          {fileList.length < 1 && (
+                          {previewImage ? (
+                            <div className="preview-container">
+                              <img src={previewImage || "/placeholder.svg"} alt="Preview" style={{ width: "100%" }} />
+                              <div className="preview-overlay">
+                                <EditOutlined />
+                              </div>
+                            </div>
+                          ) : (
                             <div>
-                              <UploadOutlined />
-                              <div style={{ marginTop: 8 }}>Tải logo</div>
+                              {uploading ? <LoadingOutlined /> : <PlusOutlined />}
+                              <div style={{ marginTop: 8 }}>Tải lên</div>
                             </div>
                           )}
                         </Upload>
@@ -464,18 +466,27 @@ function EditCompany() {
                         tooltip="Ảnh bìa nên có tỷ lệ 16:9 và độ phân giải cao"
                       >
                         <Upload
+                          customRequest={customCoverRequest}
                           listType="picture-card"
                           fileList={coverFileList}
-                          onChange={handleCoverImageUpload}
+                          onChange={({ fileList }) => setCoverFileList(fileList)}
                           maxCount={1}
-                          showUploadList={{
-                            showPreviewIcon: true,
-                            showRemoveIcon: true,
-                          }}
+                          showUploadList={false}
                         >
-                          {coverFileList.length < 1 && (
+                          {previewCoverImage ? (
+                            <div className="preview-container">
+                              <img
+                                src={previewCoverImage || "/placeholder.svg"}
+                                alt="Preview"
+                                style={{ width: "100%" }}
+                              />
+                              <div className="preview-overlay">
+                                <EditOutlined />
+                              </div>
+                            </div>
+                          ) : (
                             <div>
-                              <UploadOutlined />
+                              {uploadingCover ? <LoadingOutlined /> : <PlusOutlined />}
                               <div style={{ marginTop: 8 }}>Tải ảnh bìa</div>
                             </div>
                           )}

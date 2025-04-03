@@ -6,9 +6,9 @@ const companyService = {
         return httpRequest.get(url);
     },
 
-    updateCompany: async (id, data) => {
-        const url = `info/admin/company/${id}`;
-        return httpRequest.patch(url, data);
+    updateCompany: async (data) => {
+        const url = `info/admin/update-company`;
+        return httpRequest.post(url, data);
     },
 
     deleteCompany: async (id) => {
