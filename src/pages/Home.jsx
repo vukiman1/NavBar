@@ -1,9 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   Layout,
-  Menu,
   Card,
   Statistic,
   Row,
@@ -19,24 +18,41 @@ import {
   Space,
   Typography,
   Tag,
+  Input,
+  Breadcrumb,
+  theme,
+  Tooltip,
+  Select,
+  DatePicker,
 } from "antd"
 import {
   BarChartOutlined,
   BellOutlined,
+  CalendarOutlined,
   DownOutlined,
   FileTextOutlined,
-  MenuFoldOutlined,
-  MenuUnfoldOutlined,
   PieChartOutlined,
   SettingOutlined,
   ShopOutlined,
   TeamOutlined,
   UserOutlined,
+  SearchOutlined,
+  DashboardOutlined,
+  FilterOutlined,
+  ReloadOutlined,
+  DownloadOutlined,
+  EyeOutlined,
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+  ClockCircleOutlined,
+  AppstoreOutlined,
+  UnorderedListOutlined,
 } from "@ant-design/icons"
 
 const { Header, Sider, Content } = Layout
 const { Title, Text, Paragraph } = Typography
 const { TabPane } = Tabs
+const { useToken } = theme
 
 // Mock data
 const dashboardData = {
@@ -68,10 +84,12 @@ const dashboardData = {
   jobPostTrends: {
     labels: ["Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4"],
     data: [120, 134, 156, 148],
+    previousPeriod: [110, 125, 140, 130],
   },
   applicationTrends: {
     labels: ["Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4"],
     data: [800, 950, 1050, 980],
+    previousPeriod: [750, 880, 920, 900],
   },
   conversionRate: {
     views: 12000,
@@ -104,16 +122,7 @@ const dashboardData = {
       hireRate: 25.0,
     },
   ],
-  userGrowth: {
-    labels: ["Tuần 1", "Tuần 2", "Tuần 3", "Tuần 4"],
-    users: [120, 145, 160, 182],
-    employers: [20, 18, 25, 30],
-  },
-  jobPostWithoutApplyRate: {
-    totalExpiredPosts: 34,
-    noApplicationPosts: 12,
-    rate: 35.3,
-  },
+
   applicationByAcademicLevel: [
     { level: "Trên đại học", count: 543 },
     { level: "Đại học", count: 4321 },
@@ -198,10 +207,46 @@ const formatDate = (dateString) => {
   }).format(date)
 }
 
-// Chart components using Ant Design
-const SimpleBarChart = ({ data, labels, title, description }) => {
+// Modify the EnhancedBarChart component to support multiple data series
+const EnhancedBarChart = ({ dataSeries, labels, title, description }) => {
+  const { token } = useToken()
+
   return (
-    <Card title={title} extra={<Text type="secondary">{description}</Text>}>
+    <Card
+      title={
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <BarChartOutlined style={{ marginRight: 8, color: token.colorPrimary }} />
+          <span>{title}</span>
+        </div>
+      }
+      extra={
+        <Space>
+          <Text type="secondary">{description}</Text>
+          <Tooltip title="Tải xuống dữ liệu">
+            <Button type="text" icon={<DownloadOutlined />} size="small" />
+          </Tooltip>
+        </Space>
+      }
+      bordered={false}
+      className="dashboard-card"
+    >
+      <div style={{ marginBottom: 16, display: "flex", justifyContent: "center" }}>
+        <Space size="large">
+          {dataSeries.map((series, i) => (
+            <Space key={i}>
+              <div
+                style={{
+                  width: 12,
+                  height: 12,
+                  borderRadius: "50%",
+                  backgroundColor: series.color || token.colorPrimary,
+                }}
+              ></div>
+              <Text>{series.name}</Text>
+            </Space>
+          ))}
+        </Space>
+      </div>
       <div
         style={{
           height: 300,
@@ -211,39 +256,104 @@ const SimpleBarChart = ({ data, labels, title, description }) => {
           padding: "0 20px",
         }}
       >
-        {data.map((value, index) => (
-          <div key={index} style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-            <div
-              style={{
-                backgroundColor: "#1890ff",
-                width: 40,
-                height: `${(value / Math.max(...data)) * 200}px`,
-                borderTopLeftRadius: 4,
-                borderTopRightRadius: 4,
-              }}
-            ></div>
-            <Text style={{ marginTop: 8 }}>{labels[index]}</Text>
-          </div>
-        ))}
+        {labels.map((label, index) => {
+          return (
+            <div key={index} style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "80px" }}>
+              <div style={{ display: "flex", alignItems: "flex-end", marginBottom: 4 }}>
+                {dataSeries.map((series, i) => {
+                  const value = series.data[index]
+                  const prevValue = series.previousPeriod ? series.previousPeriod[index] : null
+                  const change = prevValue ? ((value - prevValue) / prevValue) * 100 : null
+                  const isIncrease = prevValue ? value > prevValue : null
+                  const maxValue = Math.max(...series.data, ...(series.previousPeriod || []))
+                  const normalizedHeight = (value / series.maxValue) * 180
+
+                  return (
+                    <Tooltip
+                      key={i}
+                      title={
+                        <>
+                          <div>
+                            {series.name}: {value.toLocaleString()}
+                          </div>
+                          {prevValue && (
+                            <div>
+                              Kỳ trước: {prevValue.toLocaleString()}, Thay đổi: {change.toFixed(1)}%
+                            </div>
+                          )}
+                        </>
+                      }
+                    >
+                      <div
+                        style={{
+                          backgroundColor: series.color || token.colorPrimary,
+                          width: 20,
+                          height: `${normalizedHeight}px`,
+                          borderTopLeftRadius: 4,
+                          borderTopRightRadius: 4,
+                          marginRight: 4,
+                        }}
+                      ></div>
+                    </Tooltip>
+                  )
+                })}
+              </div>
+              <Text style={{ marginTop: 8 }}>{label}</Text>
+            </div>
+          )
+        })}
       </div>
     </Card>
   )
 }
 
-const SimplePieChart = ({ data, labels, title, description }) => {
+// Enhanced Pie Chart with better visualization
+const EnhancedPieChart = ({ data, labels, title, description }) => {
+  const { token } = useToken()
   const total = data.reduce((sum, value) => sum + value, 0)
-  const colors = ["#1890ff", "#36cfc9", "#73d13d", "#ffc53d", "#ff7a45", "#ff4d4f"]
+  const colors = [
+    token.colorPrimary,
+    token.colorInfo,
+    token.colorSuccess,
+    token.colorWarning,
+    token.colorError,
+    token.colorTextSecondary,
+  ]
 
   return (
-    <Card title={title} extra={<Text type="secondary">{description}</Text>}>
+    <Card
+      title={
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <PieChartOutlined style={{ marginRight: 8, color: token.colorPrimary }} />
+          <span>{title}</span>
+        </div>
+      }
+      extra={
+        <Space>
+          <Text type="secondary">{description}</Text>
+          <Tooltip title="Tải xuống dữ liệu">
+            <Button type="text" icon={<DownloadOutlined />} size="small" />
+          </Tooltip>
+        </Space>
+      }
+      bordered={false}
+      className="dashboard-card"
+    >
       <div style={{ display: "flex", justifyContent: "center", marginBottom: 24 }}>
-        <div style={{ position: "relative", width: 160, height: 160 }}>
+        <div style={{ position: "relative", width: 180, height: 180 }}>
           <div
             style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}
           >
-            <Text strong style={{ fontSize: 20 }}>
-              {total}
-            </Text>
+            <div style={{ textAlign: "center" }}>
+              <Text strong style={{ fontSize: 24 }}>
+                {total.toLocaleString()}
+              </Text>
+              <div>
+                <Text type="secondary" style={{ fontSize: 14 }}>
+                  Tổng số
+                </Text>
+              </div>
+            </div>
           </div>
           <svg width="100%" height="100%" viewBox="0 0 100 100">
             {data.map((value, index) => {
@@ -262,70 +372,124 @@ const SimplePieChart = ({ data, labels, title, description }) => {
                   strokeDasharray={`${percentage} ${100 - percentage}`}
                   strokeDashoffset={`${-previousPercentages}`}
                   transform="rotate(-90 50 50)"
-                />
+                >
+                  <title>
+                    {labels[index]}: {value.toLocaleString()} ({percentage.toFixed(1)}%)
+                  </title>
+                </circle>
               )
             })}
           </svg>
         </div>
       </div>
-      <Row gutter={[16, 8]}>
-        {data.map((value, index) => (
-          <Col span={12} key={index}>
-            <Space>
+      <Row gutter={[16, 16]}>
+        {data.map((value, index) => {
+          const percentage = (value / total) * 100
+
+          return (
+            <Col span={12} key={index}>
               <div
                 style={{
-                  width: 12,
-                  height: 12,
-                  borderRadius: "50%",
-                  backgroundColor: colors[index % colors.length],
+                  display: "flex",
+                  alignItems: "center",
+                  padding: "8px",
+                  borderRadius: "4px",
+                  backgroundColor: index % 2 === 0 ? token.colorBgContainer : token.colorBgElevated,
                 }}
-              ></div>
-              <Text>{labels[index]}</Text>
-              <Text strong style={{ marginLeft: "auto" }}>
-                {value}
-              </Text>
-            </Space>
-          </Col>
-        ))}
+              >
+                <div
+                  style={{
+                    width: 12,
+                    height: 12,
+                    borderRadius: "50%",
+                    backgroundColor: colors[index % colors.length],
+                    marginRight: 8,
+                  }}
+                ></div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <Text>{labels[index]}</Text>
+                    <Text strong>{value.toLocaleString()}</Text>
+                  </div>
+                  <Progress
+                    percent={percentage}
+                    size="small"
+                    showInfo={false}
+                    strokeColor={colors[index % colors.length]}
+                    style={{ marginTop: 4 }}
+                  />
+                </div>
+              </div>
+            </Col>
+          )
+        })}
       </Row>
     </Card>
   )
 }
 
-// Company performance table columns
+// Enhanced Company performance table columns
 const companyColumns = [
   {
     title: "Công ty",
     dataIndex: "companyName",
     key: "companyName",
+    render: (text) => <Text strong>{text}</Text>,
   },
   {
     title: "Tin đăng",
     dataIndex: "jobPosts",
     key: "jobPosts",
     align: "right",
+    render: (value) => (
+      <Tooltip title={`${value} tin tuyển dụng`}>
+        <Tag color="blue" style={{ minWidth: "60px", textAlign: "center" }}>
+          {value}
+        </Tag>
+      </Tooltip>
+    ),
   },
   {
     title: "Ứng tuyển",
     dataIndex: "applications",
     key: "applications",
     align: "right",
+    render: (value) => (
+      <Tooltip title={`${value} lượt ứng tuyển`}>
+        <Tag color="green" style={{ minWidth: "60px", textAlign: "center" }}>
+          {value}
+        </Tag>
+      </Tooltip>
+    ),
   },
   {
     title: "Tỷ lệ tuyển",
     dataIndex: "hireRate",
     key: "hireRate",
     align: "right",
-    render: (hireRate) => `${hireRate}%`,
+    render: (hireRate) => {
+      let color = "green"
+      if (hireRate < 30) color = "orange"
+      if (hireRate < 20) color = "red"
+
+      return (
+        <Tooltip title={`Tỷ lệ tuyển dụng thành công: ${hireRate}%`}>
+          <Tag color={color} style={{ minWidth: "60px", textAlign: "center" }}>
+            {hireRate}%
+          </Tag>
+        </Tooltip>
+      )
+    },
   },
 ]
 
-// Most viewed jobs table columns
+// Enhanced Most viewed jobs table columns
 const jobsColumns = [
   {
     title: "Vị trí",
     dataIndex: "jobTitle",
     key: "jobTitle",
+    render: (text) => <Text strong>{text}</Text>,
   },
   {
     title: "Công ty",
@@ -337,29 +501,64 @@ const jobsColumns = [
     dataIndex: "views",
     key: "views",
     align: "right",
+    render: (value) => (
+      <Space>
+        <EyeOutlined style={{ color: "#1890ff" }} />
+        <span>{value.toLocaleString()}</span>
+      </Space>
+    ),
   },
   {
     title: "Ứng tuyển",
     dataIndex: "applies",
     key: "applies",
     align: "right",
+    render: (value, record) => {
+      const rate = ((value / record.views) * 100).toFixed(1)
+      return (
+        <Tooltip title={`Tỷ lệ chuyển đổi: ${rate}%`}>
+          <Space>
+            <FileTextOutlined style={{ color: "#52c41a" }} />
+            <span>{value.toLocaleString()}</span>
+            <Tag color="green" style={{ fontSize: "11px" }}>
+              {rate}%
+            </Tag>
+          </Space>
+        </Tooltip>
+      )
+    },
   },
 ]
 
 // Main Dashboard Component
 const Home = () => {
+  const { token } = useToken()
   const [collapsed, setCollapsed] = useState(false)
+  const [viewMode, setViewMode] = useState("card")
+  const [timeRange, setTimeRange] = useState("month")
+  const [loading, setLoading] = useState(true)
   const unreadNotifications = dashboardData.notifications.filter((n) => !n.isRead).length
+
+  // Simulate loading
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false)
+    }, 1000)
+
+    return () => clearTimeout(timer)
+  }, [])
 
   // User dropdown menu items
   const userMenuItems = [
     {
       key: "1",
       label: "Hồ sơ",
+      icon: <UserOutlined />,
     },
     {
       key: "2",
       label: "Cài đặt",
+      icon: <SettingOutlined />,
     },
     {
       type: "divider",
@@ -367,6 +566,7 @@ const Home = () => {
     {
       key: "3",
       label: "Đăng xuất",
+      icon: <UserOutlined />,
     },
   ]
 
@@ -374,82 +574,293 @@ const Home = () => {
   const getActivityIcon = (type) => {
     switch (type) {
       case "job_post_created":
-        return <FileTextOutlined style={{ color: "#1890ff" }} />
+        return <FileTextOutlined style={{ color: token.colorPrimary }} />
       case "user_registered":
-        return <UserOutlined style={{ color: "#1890ff" }} />
+        return <UserOutlined style={{ color: token.colorSuccess }} />
       case "application_submitted":
-        return <FileTextOutlined style={{ color: "#1890ff" }} />
+        return <FileTextOutlined style={{ color: token.colorInfo }} />
       default:
-        return <FileTextOutlined style={{ color: "#1890ff" }} />
+        return <FileTextOutlined style={{ color: token.colorPrimary }} />
     }
   }
 
-  return (
-    <Layout >
-      {/* Sidebar */}
+  // Filter options
+  const filterItems = [
+    {
+      key: "1",
+      label: "Tất cả dữ liệu",
+    },
+    {
+      key: "2",
+      label: "Dữ liệu trong tháng",
+    },
+    {
+      key: "3",
+      label: "Dữ liệu trong quý",
+    },
+  ]
 
+  return (
+    <Layout style={{ minHeight: "100vh" }}>
+      {/* Header */}
+      <Header
+        style={{
+          background: token.colorBgContainer,
+          padding: "0 24px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          boxShadow: "0 1px 4px rgba(0, 0, 0, 0.05)",
+          position: "sticky",
+          top: 0,
+          zIndex: 1000,
+          height: "64px",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              marginRight: 24,
+              fontSize: "18px",
+              fontWeight: "bold",
+              color: token.colorPrimary,
+            }}
+          >
+            <DashboardOutlined style={{ marginRight: 8, fontSize: "24px" }} />
+            <span>JobAdmin</span>
+          </div>
+
+          <Breadcrumb items={[{ title: "Trang chủ" }, { title: "Tổng quan" }]} />
+        </div>
+
+        <Space size={16}>
+          <Input
+            prefix={<SearchOutlined style={{ color: token.colorTextSecondary }} />}
+            placeholder="Tìm kiếm..."
+            style={{ width: 200 }}
+          />
+
+          <Badge count={unreadNotifications} size="small">
+            <Button type="text" icon={<BellOutlined />} size="large" />
+          </Badge>
+
+          <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
+            <Button type="text">
+              <Space>
+                <Avatar src="/placeholder.svg?height=32&width=32" />
+                <span>Admin User</span>
+                <DownOutlined style={{ fontSize: 12 }} />
+              </Space>
+            </Button>
+          </Dropdown>
+        </Space>
+      </Header>
 
       <Layout>
- 
-
         {/* Main Content */}
-        <Content style={{ margin: "24px", overflow: "initial" }}>
+        <Content style={{ padding: "24px", backgroundColor: token.colorBgLayout }}>
+          {/* Dashboard Header */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: 24,
+              flexWrap: "wrap",
+              gap: "16px",
+            }}
+          >
+            <div>
+              <Title level={3} style={{ margin: 0 }}>
+                Tổng quan hệ thống
+              </Title>
+              <Text type="secondary">Thống kê và phân tích dữ liệu tuyển dụng</Text>
+            </div>
+
+            <Space wrap>
+              <DatePicker.RangePicker placeholder={["Từ ngày", "Đến ngày"]} style={{ width: "280px" }} />
+
+              <Select
+                defaultValue="month"
+                style={{ width: 140 }}
+                onChange={setTimeRange}
+                options={[
+                  { value: "week", label: "Tuần này" },
+                  { value: "month", label: "Tháng này" },
+                  { value: "quarter", label: "Quý này" },
+                  { value: "year", label: "Năm nay" },
+                ]}
+              />
+
+              <Dropdown menu={{ items: filterItems }}>
+                <Button icon={<FilterOutlined />}>
+                  Bộ lọc <DownOutlined />
+                </Button>
+              </Dropdown>
+
+              <Tooltip title="Làm mới dữ liệu">
+                <Button icon={<ReloadOutlined />} onClick={() => setLoading(true)} />
+              </Tooltip>
+
+              <Space.Compact>
+                <Button
+                  type={viewMode === "card" ? "primary" : "default"}
+                  icon={<AppstoreOutlined />}
+                  onClick={() => setViewMode("card")}
+                />
+                <Button
+                  type={viewMode === "list" ? "primary" : "default"}
+                  icon={<UnorderedListOutlined />}
+                  onClick={() => setViewMode("list")}
+                />
+              </Space.Compact>
+            </Space>
+          </div>
+
           {/* Overview Stats */}
           <Row gutter={[24, 24]}>
             <Col xs={24} sm={12} lg={6}>
-              <Card>
+              <Card loading={loading} bordered={false} className="dashboard-card" bodyStyle={{ padding: "24px" }}>
                 <Statistic
-                  title="Tin tuyển dụng"
+                  title={
+                    <div style={{ display: "flex", alignItems: "center", marginBottom: 8 }}>
+                      <FileTextOutlined style={{ marginRight: 8, color: token.colorPrimary }} />
+                      <span>Tin tuyển dụng</span>
+                    </div>
+                  }
                   value={dashboardData.overview.totalJobPosts}
-                  prefix={<FileTextOutlined />}
+                  valueStyle={{ color: token.colorPrimary, fontSize: "28px" }}
                 />
-                <Text type="secondary">{dashboardData.overview.jobPostsPendingApproval} tin đang chờ duyệt</Text>
+                <div style={{ marginTop: 12 }}>
+                  <Space align="center">
+                    <Badge status="processing" />
+                    <Text type="secondary">{dashboardData.overview.jobPostsPendingApproval} tin đang chờ duyệt</Text>
+                  </Space>
+                </div>
+                <div style={{ marginTop: 16 }}>
+                  <Progress
+                    percent={Math.round(
+                      ((dashboardData.overview.totalJobPosts - dashboardData.overview.jobPostsExpired) /
+                        dashboardData.overview.totalJobPosts) *
+                        100,
+                    )}
+                    size="small"
+                    status="active"
+                  />
+                </div>
               </Card>
             </Col>
             <Col xs={24} sm={12} lg={6}>
-              <Card>
-                <Statistic title="Công ty" value={dashboardData.overview.totalCompanies} prefix={<ShopOutlined />} />
-                <Text type="secondary">Đang hoạt động trên hệ thống</Text>
-              </Card>
-            </Col>
-            <Col xs={24} sm={12} lg={6}>
-              <Card>
-                <Statistic title="Người dùng" value={dashboardData.overview.totalUsers} prefix={<UserOutlined />} />
-                <Text type="secondary">+{dashboardData.overview.newUsersThisWeek} người dùng mới tuần này</Text>
-              </Card>
-            </Col>
-            <Col xs={24} sm={12} lg={6}>
-              <Card>
+              <Card loading={loading} bordered={false} className="dashboard-card" bodyStyle={{ padding: "24px" }}>
                 <Statistic
-                  title="Lượt ứng tuyển"
-                  value={dashboardData.overview.totalApplications}
-                  prefix={<FileTextOutlined />}
+                  title={
+                    <div style={{ display: "flex", alignItems: "center", marginBottom: 8 }}>
+                      <ShopOutlined style={{ marginRight: 8, color: token.colorInfo }} />
+                      <span>Công ty</span>
+                    </div>
+                  }
+                  value={dashboardData.overview.totalCompanies}
+                  valueStyle={{ color: token.colorInfo, fontSize: "28px" }}
                 />
-                <Text type="secondary">Tỷ lệ chuyển đổi: {dashboardData.conversionRate.rate}%</Text>
+                <div style={{ marginTop: 12 }}>
+                  <Space align="center">
+                    <Badge status="success" />
+                    <Text type="secondary">Đang hoạt động trên hệ thống</Text>
+                  </Space>
+                </div>
+                <div style={{ marginTop: 16 }}>
+                  <Progress percent={95} size="small" status="active" strokeColor={token.colorInfo} />
+                </div>
+              </Card>
+            </Col>
+            <Col xs={24} sm={12} lg={6}>
+              <Card loading={loading} bordered={false} className="dashboard-card" bodyStyle={{ padding: "24px" }}>
+                <Statistic
+                  title={
+                    <div style={{ display: "flex", alignItems: "center", marginBottom: 8 }}>
+                      <UserOutlined style={{ marginRight: 8, color: token.colorSuccess }} />
+                      <span>Người dùng</span>
+                    </div>
+                  }
+                  value={dashboardData.overview.totalUsers}
+                  valueStyle={{ color: token.colorSuccess, fontSize: "28px" }}
+                />
+                <div style={{ marginTop: 12 }}>
+                  <Space align="center">
+                    <Badge status="processing" />
+                    <Text type="secondary">+{dashboardData.overview.newUsersThisWeek} người dùng mới tuần này</Text>
+                  </Space>
+                </div>
+                <div style={{ marginTop: 16 }}>
+                  <Progress
+                    percent={Math.round((dashboardData.overview.newUsersThisWeek / 200) * 100)}
+                    size="small"
+                    status="active"
+                    strokeColor={token.colorSuccess}
+                  />
+                </div>
+              </Card>
+            </Col>
+            <Col xs={24} sm={12} lg={6}>
+              <Card loading={loading} bordered={false} className="dashboard-card" bodyStyle={{ padding: "24px" }}>
+                <Statistic
+                  title={
+                    <div style={{ display: "flex", alignItems: "center", marginBottom: 8 }}>
+                      <FileTextOutlined style={{ marginRight: 8, color: token.colorWarning }} />
+                      <span>Lượt ứng tuyển</span>
+                    </div>
+                  }
+                  value={dashboardData.overview.totalApplications}
+                  valueStyle={{ color: token.colorWarning, fontSize: "28px" }}
+                />
+                <div style={{ marginTop: 12 }}>
+                  <Space align="center">
+                    <Badge status="success" />
+                    <Text type="secondary">Tỷ lệ chuyển đổi: {dashboardData.conversionRate.rate}%</Text>
+                  </Space>
+                </div>
+                <div style={{ marginTop: 16 }}>
+                  <Progress
+                    percent={dashboardData.conversionRate.rate}
+                    size="small"
+                    status="active"
+                    strokeColor={token.colorWarning}
+                  />
+                </div>
               </Card>
             </Col>
           </Row>
 
           {/* Charts Section */}
+
           <Row gutter={[24, 24]} style={{ marginTop: 24 }}>
-            <Col xs={24} lg={8}>
-              <SimpleBarChart
-                data={dashboardData.jobPostTrends.data}
+            <Col xs={24} lg={16}>
+              <EnhancedBarChart
+                dataSeries={[
+                  {
+                    name: "Tin tuyển dụng",
+                    data: dashboardData.jobPostTrends.data,
+                    previousPeriod: dashboardData.jobPostTrends.previousPeriod,
+                    color: token.colorPrimary,
+                    maxValue: Math.max(...dashboardData.jobPostTrends.data) * 1.2,
+                  },
+                  {
+                    name: "Lượt ứng tuyển",
+                    data: dashboardData.applicationTrends.data.map((value) => value / 8), // Scale down for comparison
+                    previousPeriod: dashboardData.applicationTrends.previousPeriod.map((value) => value / 8),
+                    color: token.colorSuccess,
+                    maxValue: (Math.max(...dashboardData.applicationTrends.data) / 8) * 1.2,
+                  },
+                ]}
                 labels={dashboardData.jobPostTrends.labels}
-                title="Xu hướng đăng tin"
-                description="Số lượng tin đăng theo tháng"
+                title="Xu hướng đăng tin và ứng tuyển"
+                description="So sánh số lượng tin đăng và ứng tuyển theo tháng"
               />
             </Col>
             <Col xs={24} lg={8}>
-              <SimpleBarChart
-                data={dashboardData.applicationTrends.data}
-                labels={dashboardData.applicationTrends.labels}
-                title="Xu hướng ứng tuyển"
-                description="Số lượng ứng tuyển theo tháng"
-              />
-            </Col>
-            <Col xs={24} lg={8}>
-              <SimplePieChart
+              <EnhancedPieChart
                 data={dashboardData.applicationByAcademicLevel.map((item) => item.count)}
                 labels={dashboardData.applicationByAcademicLevel.map((item) => item.level)}
                 title="Ứng tuyển theo trình độ học vấn"
@@ -462,77 +873,111 @@ const Home = () => {
           <Row gutter={[24, 24]} style={{ marginTop: 24 }}>
             <Col span={24}>
               <Card
-                title="Thống kê phê duyệt tin tuyển dụng"
-                extra={<Text type="secondary">Tổng số: {dashboardData.jobPostApprovalStats.total} tin</Text>}
+                loading={loading}
+                title={
+                  <div style={{ display: "flex", alignItems: "center" }}>
+                    <FileTextOutlined style={{ marginRight: 8, color: token.colorPrimary }} />
+                    <span>Thống kê phê duyệt tin tuyển dụng</span>
+                  </div>
+                }
+                extra={
+                  <Space>
+                    <Text type="secondary">Tổng số: {dashboardData.jobPostApprovalStats.total} tin</Text>
+                    <Tooltip title="Tải xuống dữ liệu">
+                      <Button type="text" icon={<DownloadOutlined />} size="small" />
+                    </Tooltip>
+                  </Space>
+                }
+                bordered={false}
+                className="dashboard-card"
               >
-                <Row gutter={[16, 16]}>
-                  <Col span={24}>
-                    <Space direction="vertical" style={{ width: "100%" }}>
-                      <div style={{ display: "flex", justifyContent: "space-between" }}>
-                        <Text>Đã duyệt</Text>
-                        <Text>
-                          {dashboardData.jobPostApprovalStats.approved} (
-                          {Math.round(
+                <Row gutter={[24, 24]}>
+                  <Col xs={24} md={8}>
+                    <Card bordered={false} style={{ backgroundColor: token.colorBgElevated }}>
+                      <Space direction="vertical" style={{ width: "100%" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                          <Space>
+                            <CheckCircleOutlined style={{ color: token.colorSuccess }} />
+                            <Text strong>Đã duyệt</Text>
+                          </Space>
+                          <Text strong>
+                            {dashboardData.jobPostApprovalStats.approved} (
+                            {Math.round(
+                              (dashboardData.jobPostApprovalStats.approved / dashboardData.jobPostApprovalStats.total) *
+                                100,
+                            )}
+                            %)
+                          </Text>
+                        </div>
+                        <Progress
+                          percent={Math.round(
                             (dashboardData.jobPostApprovalStats.approved / dashboardData.jobPostApprovalStats.total) *
                               100,
                           )}
-                          %)
-                        </Text>
-                      </div>
-                      <Progress
-                        percent={Math.round(
-                          (dashboardData.jobPostApprovalStats.approved / dashboardData.jobPostApprovalStats.total) *
-                            100,
-                        )}
-                        showInfo={false}
-                        strokeColor="#1890ff"
-                      />
-                    </Space>
+                          showInfo={false}
+                          strokeColor={token.colorSuccess}
+                          size="large"
+                        />
+                      </Space>
+                    </Card>
                   </Col>
-                  <Col span={24}>
-                    <Space direction="vertical" style={{ width: "100%" }}>
-                      <div style={{ display: "flex", justifyContent: "space-between" }}>
-                        <Text>Từ chối</Text>
-                        <Text>
-                          {dashboardData.jobPostApprovalStats.rejected} (
-                          {Math.round(
+                  <Col xs={24} md={8}>
+                    <Card bordered={false} style={{ backgroundColor: token.colorBgElevated }}>
+                      <Space direction="vertical" style={{ width: "100%" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                          <Space>
+                            <CloseCircleOutlined style={{ color: token.colorError }} />
+                            <Text strong>Từ chối</Text>
+                          </Space>
+                          <Text strong>
+                            {dashboardData.jobPostApprovalStats.rejected} (
+                            {Math.round(
+                              (dashboardData.jobPostApprovalStats.rejected / dashboardData.jobPostApprovalStats.total) *
+                                100,
+                            )}
+                            %)
+                          </Text>
+                        </div>
+                        <Progress
+                          percent={Math.round(
                             (dashboardData.jobPostApprovalStats.rejected / dashboardData.jobPostApprovalStats.total) *
                               100,
                           )}
-                          %)
-                        </Text>
-                      </div>
-                      <Progress
-                        percent={Math.round(
-                          (dashboardData.jobPostApprovalStats.rejected / dashboardData.jobPostApprovalStats.total) *
-                            100,
-                        )}
-                        showInfo={false}
-                        strokeColor="#ff4d4f"
-                      />
-                    </Space>
+                          showInfo={false}
+                          strokeColor={token.colorError}
+                          size="large"
+                        />
+                      </Space>
+                    </Card>
                   </Col>
-                  <Col span={24}>
-                    <Space direction="vertical" style={{ width: "100%" }}>
-                      <div style={{ display: "flex", justifyContent: "space-between" }}>
-                        <Text>Đang chờ</Text>
-                        <Text>
-                          {dashboardData.jobPostApprovalStats.pending} (
-                          {Math.round(
+                  <Col xs={24} md={8}>
+                    <Card bordered={false} style={{ backgroundColor: token.colorBgElevated }}>
+                      <Space direction="vertical" style={{ width: "100%" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                          <Space>
+                            <ClockCircleOutlined style={{ color: token.colorWarning }} />
+                            <Text strong>Đang chờ</Text>
+                          </Space>
+                          <Text strong>
+                            {dashboardData.jobPostApprovalStats.pending} (
+                            {Math.round(
+                              (dashboardData.jobPostApprovalStats.pending / dashboardData.jobPostApprovalStats.total) *
+                                100,
+                            )}
+                            %)
+                          </Text>
+                        </div>
+                        <Progress
+                          percent={Math.round(
                             (dashboardData.jobPostApprovalStats.pending / dashboardData.jobPostApprovalStats.total) *
                               100,
                           )}
-                          %)
-                        </Text>
-                      </div>
-                      <Progress
-                        percent={Math.round(
-                          (dashboardData.jobPostApprovalStats.pending / dashboardData.jobPostApprovalStats.total) * 100,
-                        )}
-                        showInfo={false}
-                        strokeColor="#faad14"
-                      />
-                    </Space>
+                          showInfo={false}
+                          strokeColor={token.colorWarning}
+                          size="large"
+                        />
+                      </Space>
+                    </Card>
                   </Col>
                 </Row>
               </Card>
@@ -542,7 +987,25 @@ const Home = () => {
           {/* Tables Section */}
           <Row gutter={[24, 24]} style={{ marginTop: 24 }}>
             <Col xs={24} lg={12}>
-              <Card title="Hiệu suất công ty" extra={<Text type="secondary">Các công ty có hiệu suất tốt nhất</Text>}>
+              <Card
+                loading={loading}
+                title={
+                  <div style={{ display: "flex", alignItems: "center" }}>
+                    <ShopOutlined style={{ marginRight: 8, color: token.colorPrimary }} />
+                    <span>Hiệu suất công ty</span>
+                  </div>
+                }
+                extra={
+                  <Space>
+                    <Text type="secondary">Các công ty có hiệu suất tốt nhất</Text>
+                    <Tooltip title="Tải xuống dữ liệu">
+                      <Button type="text" icon={<DownloadOutlined />} size="small" />
+                    </Tooltip>
+                  </Space>
+                }
+                bordered={false}
+                className="dashboard-card"
+              >
                 <Table
                   dataSource={dashboardData.companyPerformance}
                   columns={companyColumns}
@@ -554,8 +1017,23 @@ const Home = () => {
             </Col>
             <Col xs={24} lg={12}>
               <Card
-                title="Tin tuyển dụng xem nhiều nhất"
-                extra={<Text type="secondary">Các tin có lượt xem và ứng tuyển cao nhất</Text>}
+                loading={loading}
+                title={
+                  <div style={{ display: "flex", alignItems: "center" }}>
+                    <EyeOutlined style={{ marginRight: 8, color: token.colorPrimary }} />
+                    <span>Tin tuyển dụng xem nhiều nhất</span>
+                  </div>
+                }
+                extra={
+                  <Space>
+                    <Text type="secondary">Các tin có lượt xem và ứng tuyển cao nhất</Text>
+                    <Tooltip title="Tải xuống dữ liệu">
+                      <Button type="text" icon={<DownloadOutlined />} size="small" />
+                    </Tooltip>
+                  </Space>
+                }
+                bordered={false}
+                className="dashboard-card"
               >
                 <Table
                   dataSource={dashboardData.mostViewedJobs}
@@ -572,14 +1050,46 @@ const Home = () => {
           <Row gutter={[24, 24]} style={{ marginTop: 24 }}>
             <Col xs={24} lg={12}>
               <Card
-                title="Lĩnh vực phổ biến"
-                extra={<Text type="secondary">Các lĩnh vực có nhiều tin tuyển dụng nhất</Text>}
+                loading={loading}
+                title={
+                  <div style={{ display: "flex", alignItems: "center" }}>
+                    <BarChartOutlined style={{ marginRight: 8, color: token.colorPrimary }} />
+                    <span>Lĩnh vực phổ biến</span>
+                  </div>
+                }
+                extra={
+                  <Space>
+                    <Text type="secondary">Các lĩnh vực có nhiều tin tuyển dụng nhất</Text>
+                    <Tooltip title="Tải xuống dữ liệu">
+                      <Button type="text" icon={<DownloadOutlined />} size="small" />
+                    </Tooltip>
+                  </Space>
+                }
+                bordered={false}
+                className="dashboard-card"
               >
                 <Space direction="vertical" style={{ width: "100%" }}>
-                  {dashboardData.popularJobFields.map((field) => (
+                  {dashboardData.popularJobFields.map((field, index) => (
                     <div key={field.field}>
                       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-                        <Text>{field.field}</Text>
+                        <Space>
+                          <div
+                            style={{
+                              width: 16,
+                              height: 16,
+                              borderRadius: "4px",
+                              backgroundColor:
+                                index === 0
+                                  ? token.colorPrimary
+                                  : index === 1
+                                    ? token.colorInfo
+                                    : index === 2
+                                      ? token.colorSuccess
+                                      : token.colorWarning,
+                            }}
+                          ></div>
+                          <Text strong>{field.field}</Text>
+                        </Space>
                         <Text strong>{field.count} tin</Text>
                       </div>
                       <Progress
@@ -587,6 +1097,16 @@ const Home = () => {
                           (field.count / Math.max(...dashboardData.popularJobFields.map((f) => f.count))) * 100,
                         )}
                         showInfo={false}
+                        strokeColor={
+                          index === 0
+                            ? token.colorPrimary
+                            : index === 1
+                              ? token.colorInfo
+                              : index === 2
+                                ? token.colorSuccess
+                                : token.colorWarning
+                        }
+                        size="large"
                       />
                     </div>
                   ))}
@@ -595,8 +1115,23 @@ const Home = () => {
             </Col>
             <Col xs={24} lg={12}>
               <Card
-                title="Hoạt động gần đây"
-                extra={<Text type="secondary">Các hoạt động mới nhất trên hệ thống</Text>}
+                loading={loading}
+                title={
+                  <div style={{ display: "flex", alignItems: "center" }}>
+                    <CalendarOutlined style={{ marginRight: 8, color: token.colorPrimary }} />
+                    <span>Hoạt động gần đây</span>
+                  </div>
+                }
+                extra={
+                  <Space>
+                    <Text type="secondary">Các hoạt động mới nhất trên hệ thống</Text>
+                    <Tooltip title="Tải xuống dữ liệu">
+                      <Button type="text" icon={<DownloadOutlined />} size="small" />
+                    </Tooltip>
+                  </Space>
+                }
+                bordered={false}
+                className="dashboard-card"
               >
                 <List
                   itemLayout="horizontal"
@@ -604,46 +1139,18 @@ const Home = () => {
                   renderItem={(activity) => (
                     <List.Item>
                       <List.Item.Meta
-                        avatar={<Avatar icon={getActivityIcon(activity.type)} style={{ backgroundColor: "#f0f5ff" }} />}
-                        title={activity.message}
-                        description={formatDate(activity.createdAt)}
-                      />
-                    </List.Item>
-                  )}
-                />
-              </Card>
-            </Col>
-          </Row>
-
-          {/* Notifications */}
-          <Row gutter={[24, 24]} style={{ marginTop: 24 }}>
-            <Col span={24}>
-              <Card title="Thông báo" extra={<Text type="secondary">Các thông báo mới nhất</Text>}>
-                <List
-                  itemLayout="horizontal"
-                  dataSource={dashboardData.notifications}
-                  renderItem={(notification) => (
-                    <List.Item>
-                      <List.Item.Meta
                         avatar={
                           <Avatar
-                            icon={<BellOutlined />}
-                            style={{
-                              backgroundColor: notification.isRead ? "#f5f5f5" : "#e6f7ff",
-                            }}
+                            icon={getActivityIcon(activity.type)}
+                            style={{ backgroundColor: token.colorBgElevated }}
                           />
                         }
-                        title={
-                          <Space>
-                            {notification.title}
-                            {!notification.isRead && <Tag color="blue">Mới</Tag>}
-                          </Space>
-                        }
+                        title={<Text strong>{activity.message}</Text>}
                         description={
-                          <>
-                            <Paragraph>{notification.content}</Paragraph>
-                            <Text type="secondary">{formatDate(notification.createdAt)}</Text>
-                          </>
+                          <Space>
+                            <CalendarOutlined style={{ fontSize: "12px" }} />
+                            <Text type="secondary">{formatDate(activity.createdAt)}</Text>
+                          </Space>
                         }
                       />
                     </List.Item>
@@ -653,152 +1160,22 @@ const Home = () => {
             </Col>
           </Row>
 
-          {/* User Growth and Conversion Rate */}
-          <Row gutter={[24, 24]} style={{ marginTop: 24 }}>
-            <Col xs={24} lg={12}>
-              <Card
-                title="Tăng trưởng người dùng"
-                extra={<Text type="secondary">Số lượng người dùng mới theo tuần</Text>}
-              >
-                <div style={{ height: 300, position: "relative" }}>
-                  <div
-                    style={{
-                      position: "absolute",
-                      inset: 0,
-                      display: "flex",
-                      alignItems: "flex-end",
-                      justifyContent: "space-between",
-                      padding: "0 20px",
-                    }}
-                  >
-                    {dashboardData.userGrowth.labels.map((label, index) => (
-                      <div
-                        key={index}
-                        style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}
-                      >
-                        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
-                          <div
-                            style={{
-                              backgroundColor: "#1890ff",
-                              width: 32,
-                              height: `${(dashboardData.userGrowth.users[index] / Math.max(...dashboardData.userGrowth.users)) * 150}px`,
-                              borderTopLeftRadius: 4,
-                              borderTopRightRadius: 4,
-                            }}
-                          ></div>
-                          <div
-                            style={{
-                              backgroundColor: "#91d5ff",
-                              width: 32,
-                              height: `${(dashboardData.userGrowth.employers[index] / Math.max(...dashboardData.userGrowth.employers)) * 150}px`,
-                              borderTopLeftRadius: 4,
-                              borderTopRightRadius: 4,
-                            }}
-                          ></div>
-                        </div>
-                        <Text>{label}</Text>
-                      </div>
-                    ))}
-                  </div>
-                  <div
-                    style={{
-                      position: "absolute",
-                      bottom: 0,
-                      left: 20,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 16,
-                    }}
-                  >
-                    <Space>
-                      <div style={{ width: 12, height: 12, borderRadius: "50%", backgroundColor: "#1890ff" }}></div>
-                      <Text>Ứng viên</Text>
-                    </Space>
-                    <Space>
-                      <div style={{ width: 12, height: 12, borderRadius: "50%", backgroundColor: "#91d5ff" }}></div>
-                      <Text>Nhà tuyển dụng</Text>
-                    </Space>
-                  </div>
-                </div>
-              </Card>
-            </Col>
-            <Col xs={24} lg={12}>
-              <Card title="Tỷ lệ chuyển đổi" extra={<Text type="secondary">Tỷ lệ ứng tuyển trên lượt xem</Text>}>
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    height: 250,
-                  }}
-                >
-                  <div
-                    style={{
-                      position: "relative",
-                      width: 160,
-                      height: 160,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <svg width="100%" height="100%" viewBox="0 0 100 100">
-                      <circle cx="50" cy="50" r="45" fill="transparent" stroke="#f0f0f0" strokeWidth="10" />
-                      <circle
-                        cx="50"
-                        cy="50"
-                        r="45"
-                        fill="transparent"
-                        stroke="#1890ff"
-                        strokeWidth="10"
-                        strokeDasharray={`${dashboardData.conversionRate.rate * 2.83} ${283 - dashboardData.conversionRate.rate * 2.83}`}
-                        strokeDashoffset="0"
-                        transform="rotate(-90 50 50)"
-                      />
-                    </svg>
-                    <div
-                      style={{
-                        position: "absolute",
-                        inset: 0,
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <Title level={2} style={{ margin: 0 }}>
-                        {dashboardData.conversionRate.rate}%
-                      </Title>
-                      <Text type="secondary">Tỷ lệ chuyển đổi</Text>
-                    </div>
-                  </div>
-                  <Row gutter={16} style={{ marginTop: 24, width: "100%" }}>
-                    <Col span={12}>
-                      <Card size="small">
-                        <Statistic
-                          title="Lượt xem"
-                          value={dashboardData.conversionRate.views}
-                          valueStyle={{ color: "#1890ff" }}
-                        />
-                      </Card>
-                    </Col>
-                    <Col span={12}>
-                      <Card size="small">
-                        <Statistic
-                          title="Lượt ứng tuyển"
-                          value={dashboardData.conversionRate.applies}
-                          valueStyle={{ color: "#1890ff" }}
-                        />
-                      </Card>
-                    </Col>
-                  </Row>
-                </div>
-              </Card>
-            </Col>
-          </Row>
+
         </Content>
       </Layout>
+
+      {/* Add custom styles */}
+      <style jsx global>{`
+        .dashboard-card {
+          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+          border-radius: 8px;
+          transition: all 0.3s ease;
+        }
+        
+        .dashboard-card:hover {
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+      `}</style>
     </Layout>
   )
 }
