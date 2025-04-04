@@ -1,3 +1,4 @@
+import { markAsRead } from "../Admin/Body/ui/notificationApi";
 import httpRequest from "../utils/httpRequest";
 
 const webService = {
@@ -5,6 +6,15 @@ const webService = {
         const url = "myjob/admin/banner";
         return httpRequest.get(url);
     },
+
+    getAllNotification() {
+        const url = "myjob/web/notification";
+        return httpRequest.get(url);
+    },
+    markAsReadNotification(id) {
+        const url = `myjob/web/notification/read/${id}`;
+        return httpRequest.patch(url);
+    }
 
    
 };

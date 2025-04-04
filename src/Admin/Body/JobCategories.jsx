@@ -95,6 +95,7 @@ function JobCategories() {
       setFilteredCategories(jobCategories)
       return
     }
+    
 
     const filtered = jobCategories.filter((category) => category.name.toLowerCase().includes(value.toLowerCase()))
     setFilteredCategories(filtered)
@@ -569,6 +570,9 @@ function JobCategories() {
             </div>
           </Form.Item>
 
+          <Form.Item label="Mô tả" name="description">
+            <Input.TextArea placeholder="Nhập mô tả ngắn về ngành nghề (không bắt buộc)" rows={3} />
+          </Form.Item>
         </Form>
       </Modal>
 

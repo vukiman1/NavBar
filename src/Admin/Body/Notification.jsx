@@ -44,6 +44,7 @@ import relativeTime from "dayjs/plugin/relativeTime"
 import { DataContext } from "../../Context/DataContext"
 import { fetchNotifications, markAsRead, markAsUnread, deleteNotification } from "./ui/notificationApi"
 import "./notification.css"
+import webService from "../../services/webService"
 
 // Extend dayjs with relative time plugin
 dayjs.extend(relativeTime)
@@ -72,8 +73,11 @@ function Notification() {
   const loadNotifications = async () => {
     setLoading(true)
     try {
+      const resData = await webService.getAllNotification()
       const data = await fetchNotifications()
-      setNotifications(data)
+      // console.log(resData.data)
+      // console.log(data)
+      setNotifications(resData.data)
     } catch (error) {
       console.error("Error fetching notifications:", error)
       message.error("Không thể tải danh sách thông báo")
@@ -129,7 +133,8 @@ function Notification() {
   // Handle mark as read
   const handleMarkAsRead = async (id) => {
     try {
-      await markAsRead(id)
+      // await markAsRead(id)
+      await webService.markAsReadNotification(id)
       setNotifications((prev) => prev.map((notif) => (notif.id === id ? { ...notif, read: true } : notif)))
       message.success("Đã đánh dấu là đã đọc")
     } catch (error) {
@@ -141,7 +146,7 @@ function Notification() {
   // Handle mark as unread
   const handleMarkAsUnread = async (id) => {
     try {
-      await markAsUnread(id)
+      await webService.markAsReadNotification(id)
       setNotifications((prev) => prev.map((notif) => (notif.id === id ? { ...notif, read: false } : notif)))
       message.success("Đã đánh dấu là chưa đọc")
     } catch (error) {
