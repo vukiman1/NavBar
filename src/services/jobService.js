@@ -7,13 +7,18 @@ const jobService = {
     },
 
     updateJobStatus: async (id, status) => {
-        const url = `job/web/admin/job-post/${id}/status`;
-        return httpRequest.patch(url, { status });
+        const url = `job/web/admin/job-posts/status/${id}/${status}`;
+        return httpRequest.patch(url);
     },
 
     deleteJobPost: async (id) => {
         const url = `job/web/admin/job-post/${id}`;
         return httpRequest.delete(url);
+    },
+
+    getJobDetail: async (id) => {
+        const url = `job/web/admin/job-posts/detail/${id}`;
+        return httpRequest.get(url);
     },
 
     getAllJobCategories: async () => {
@@ -50,9 +55,9 @@ const jobService = {
         return httpRequest.delete(url);
     },
 
-    getAllJobseekers: async () => {
-        const url = "/info/web/resumes-all/?academicLevelId=&careerId=&cityId=&experienceId=&genderId=&jobTypeId=&kw=&maritalStatusId=&page=1&pageSize=10&positionId=&typeOfWorkplaceId=";
-        return httpRequest.get(url);
+    getAllJobseekers: async (params = {}) => {
+        const url = "/info/web/resumes-all/";
+        return httpRequest.get(url, { params: params });
     },
 
     updateJobseekerStatus: async (id, status) => {

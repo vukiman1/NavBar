@@ -71,8 +71,8 @@ function JobCategories() {
 
   // Load danh sách ngành nghề
   const loadJobCategories = async () => {
-    setTableLoading(true)
     try {
+      setTableLoading(true)
       const resData = await jobService.getAllJobCategories()
       setJobCategories(resData)
       setFilteredCategories(resData)

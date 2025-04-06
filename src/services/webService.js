@@ -14,6 +14,11 @@ const webService = {
     markAsReadNotification(id) {
         const url = `myjob/web/notification/read/${id}`;
         return httpRequest.patch(url);
+    },
+
+    getDashBoardData() {
+        const url = "admin-web/dashboard";
+        return httpRequest.get(url);
     }
 
    

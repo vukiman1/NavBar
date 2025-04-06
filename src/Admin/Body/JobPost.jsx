@@ -25,6 +25,7 @@ import {
   Empty,
   Dropdown,
   Menu,
+  Skeleton,
 } from "antd"
 import {
   CheckCircleOutlined,
@@ -51,6 +52,7 @@ import {
   UpOutlined,
   FileTextOutlined,
   ShareAltOutlined,
+  LoadingOutlined,
 } from "@ant-design/icons"
 import { Link } from "react-router-dom"
 import dayjs from "dayjs"
@@ -145,7 +147,9 @@ const getDaysRemaining = (deadline) => {
 
 const JobPost = () => {
   const [jobList, setJobList] = useState([])
-  const [tableLoading, setTableLoading] = useState(false)
+  const [tableLoading, setTableLoading] = useState(true)
+  const [pageLoading, setPageLoading] = useState(true)
+  const [detailLoading, setDetailLoading] = useState(false)
   const [selectedJobId, setSelectedJobId] = useState(null)
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [isDetailDrawerVisible, setIsDetailDrawerVisible] = useState(false)
@@ -173,8 +177,8 @@ const JobPost = () => {
   })
 
   const loadJobList = async () => {
-    setTableLoading(true)
     try {
+      setTableLoading(true)
       const params = {
         search: searchText || undefined,
         approvalStatus: approvalStatus !== null ? approvalStatus : undefined,
@@ -261,11 +265,20 @@ const JobPost = () => {
       message.error("Không thể tải danh sách tin tuyển dụng")
     } finally {
       setTableLoading(false)
+      setPageLoading(false)
     }
   }
 
   useEffect(() => {
+    // Set a timeout to simulate initial loading
     loadJobList()
+
+  }, [])
+
+  useEffect(() => {
+    if (!pageLoading) {
+      loadJobList()
+    }
   }, [
     searchText,
     approvalStatus,
@@ -288,7 +301,7 @@ const JobPost = () => {
   const handleUpdateStatus = async (id, status) => {
     try {
       // In a real application, you would call an API
-      // await jobService.updateJobStatus(id, status);
+      await jobService.updateJobStatus(id, status);
 
       // Update local state
       const updatedList = jobList.map((item) => {
@@ -333,8 +346,14 @@ const JobPost = () => {
   }
 
   const viewJobDetails = (record) => {
+    setDetailLoading(true)
     setSelectedJob(record)
     setIsDetailDrawerVisible(true)
+
+    // Simulate loading job details
+    setTimeout(() => {
+      setDetailLoading(false)
+    }, 800)
   }
 
   const resetFilters = () => {
@@ -625,134 +644,157 @@ const JobPost = () => {
     },
   ]
 
+  const antIcon = <LoadingOutlined style={{ fontSize: 24 }} spin />
+
   return (
     <div style={{ padding: "24px", backgroundColor: "#f0f2f5", minHeight: "100vh" }}>
-      <Card
-        bordered={false}
-        style={{
-          borderRadius: 8,
-          boxShadow: "0 1px 2px rgba(0, 0, 0, 0.03), 0 1px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px rgba(0, 0, 0, 0.02)",
-        }}
-      >
-        {/* Header */}
-        <Flex align="center" justify="space-between" style={{ marginBottom: 24 }}>
-          <Title level={3} style={{ margin: 0 }}>
-            Quản lý tin tuyển dụng
-          </Title>
-          <Space>
-            <Statistic
-              title="Tổng số tin"
-              value={jobList?.length || 0}
-              prefix={<FileTextOutlined />}
-              style={{ marginRight: 24 }}
-            />
-            {activeFilters > 0 && (
-              <Badge count={activeFilters} offset={[0, 0]}>
-                <Tag color="blue" style={{ padding: "6px 8px" }}>
-                  Đang áp dụng {activeFilters} bộ lọc
-                </Tag>
-              </Badge>
-            )}
-          </Space>
-        </Flex>
+      {pageLoading ? (
+        <Card
+          bordered={false}
+          style={{
+            borderRadius: 8,
+            boxShadow:
+              "0 1px 2px rgba(0, 0, 0, 0.03), 0 1px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px rgba(0, 0, 0, 0.02)",
+            minHeight: "80vh",
+          }}
+        >
+          <Flex vertical align="center" justify="center" style={{ minHeight: "70vh" }}>
+            <div className="loading-spinner"></div>
+            <Text style={{ marginTop: 16, fontSize: 16 }}>Đang tải danh sách tin tuyển dụng...</Text>
+          </Flex>
+        </Card>
+      ) : (
+        <Card
+          bordered={false}
+          style={{
+            borderRadius: 8,
+            boxShadow:
+              "0 1px 2px rgba(0, 0, 0, 0.03), 0 1px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px rgba(0, 0, 0, 0.02)",
+          }}
+        >
+          {/* Header */}
+          <Flex align="center" justify="space-between" style={{ marginBottom: 24 }}>
+            <Title level={3} style={{ margin: 0 }}>
+              Quản lý tin tuyển dụng
+            </Title>
+            <Space>
+              <Statistic
+                title="Tổng số tin"
+                value={jobList?.length || 0}
+                prefix={<FileTextOutlined />}
+                style={{ marginRight: 24 }}
+              />
+              {activeFilters > 0 && (
+                <Badge count={activeFilters} offset={[0, 0]}>
+                  <Tag color="blue" style={{ padding: "6px 8px" }}>
+                    Đang áp dụng {activeFilters} bộ lọc
+                  </Tag>
+                </Badge>
+              )}
+            </Space>
+          </Flex>
 
-        <Divider style={{ margin: "12px 0 24px" }} />
+          <Divider style={{ margin: "12px 0 24px" }} />
 
-        {/* Thanh tìm kiếm và bộ lọc */}
-        <Flex justify="space-between" align="center" style={{ marginBottom: 24 }}>
-          <Space size="middle">
-            <Input.Search
-              placeholder="Tìm kiếm tin tuyển dụng..."
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              style={{ width: 300 }}
-              allowClear
-              enterButton
-            />
+          {/* Thanh tìm kiếm và bộ lọc */}
+          <Flex justify="space-between" align="center" style={{ marginBottom: 24 }}>
+            <Space size="middle">
+              <Input.Search
+                placeholder="Tìm kiếm tin tuyển dụng..."
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                style={{ width: 300 }}
+                allowClear
+                enterButton
+              />
 
-            <Select
-              placeholder="Trạng thái duyệt"
-              allowClear
-              onChange={(value) => setApprovalStatus(value)}
-              value={approvalStatus}
-              style={{ width: 180 }}
-            >
-              <Option value={1}>Chờ duyệt</Option>
-              <Option value={3}>Phê duyệt</Option>
-              <Option value={2}>Từ chối</Option>
-            </Select>
+              <Select
+                placeholder="Trạng thái duyệt"
+                allowClear
+                onChange={(value) => setApprovalStatus(value)}
+                value={approvalStatus}
+                style={{ width: 180 }}
+              >
+                <Option value={1}>Chờ duyệt</Option>
+                <Option value={3}>Phê duyệt</Option>
+                <Option value={2}>Từ chối</Option>
+              </Select>
 
-            <Select
-              placeholder="Trạng thái tuyển dụng"
-              allowClear
-              onChange={(value) => setRecruitmentStatus(value)}
-              value={recruitmentStatus}
-              style={{ width: 180 }}
-            >
-              <Option value={false}>Còn hạn</Option>
-              <Option value={true}>Hết hạn</Option>
-            </Select>
-          </Space>
+              <Select
+                placeholder="Trạng thái tuyển dụng"
+                allowClear
+                onChange={(value) => setRecruitmentStatus(value)}
+                value={recruitmentStatus}
+                style={{ width: 180 }}
+              >
+                <Option value={false}>Còn hạn</Option>
+                <Option value={true}>Hết hạn</Option>
+              </Select>
+            </Space>
 
-          <Space>
-            <Button
-              icon={<FilterOutlined />}
-              onClick={() => setFilterDrawerVisible(true)}
-              type={activeFilters > 0 ? "primary" : "default"}
-            >
-              Bộ lọc nâng cao
-            </Button>
-
-            {activeFilters > 0 && (
-              <Button icon={<ReloadOutlined />} onClick={resetFilters}>
-                Xóa bộ lọc
+            <Space>
+              <Button
+                icon={<FilterOutlined />}
+                onClick={() => setFilterDrawerVisible(true)}
+                type={activeFilters > 0 ? "primary" : "default"}
+              >
+                Bộ lọc nâng cao
               </Button>
-            )}
 
-            <Link to="/job-post/create">
-              <Button type="primary" icon={<PlusOutlined />}>
-                Thêm tin mới
-              </Button>
-            </Link>
-          </Space>
-        </Flex>
+              {activeFilters > 0 && (
+                <Button icon={<ReloadOutlined />} onClick={resetFilters}>
+                  Xóa bộ lọc
+                </Button>
+              )}
 
-        {/* Bảng dữ liệu */}
-        {jobList.length > 0 ? (
-          <Table
-            loading={tableLoading}
-            dataSource={jobList}
-            columns={columns}
-            rowKey="id"
-            pagination={{
-              ...pagination,
-              total: jobList.length,
-              showSizeChanger: true,
-              showTotal: (total) => `Tổng cộng ${total} tin tuyển dụng`,
-              pageSizeOptions: ["10", "20", "50"],
-            }}
-            onChange={handleTableChange}
-            expandable={{
-              expandedRowRender,
-              expandedRowKeys,
-              expandIcon: () => null,
-            }}
-            style={{ marginTop: 16 }}
-          />
-        ) : (
-          <Empty
-            description={
-              <span>
-                {activeFilters > 0
-                  ? "Không tìm thấy tin tuyển dụng nào phù hợp với bộ lọc"
-                  : "Chưa có tin tuyển dụng nào trong hệ thống"}
-              </span>
-            }
-            image={Empty.PRESENTED_IMAGE_SIMPLE}
-            style={{ margin: "48px 0" }}
-          />
-        )}
-      </Card>
+              <Link to="/job-post/create">
+                <Button type="primary" icon={<PlusOutlined />}>
+                  Thêm tin mới
+                </Button>
+              </Link>
+            </Space>
+          </Flex>
+
+          {/* Bảng dữ liệu */}
+          {tableLoading ? (
+            <div style={{ padding: "20px 0" }}>
+              <Skeleton active paragraph={{ rows: 10 }} />
+            </div>
+          ) : jobList.length > 0 ? (
+            <Table
+              dataSource={jobList}
+              columns={columns}
+              rowKey="id"
+              pagination={{
+                ...pagination,
+                total: jobList.length,
+                showSizeChanger: true,
+                showTotal: (total) => `Tổng cộng ${total} tin tuyển dụng`,
+                pageSizeOptions: ["10", "20", "50"],
+              }}
+              onChange={handleTableChange}
+              expandable={{
+                expandedRowRender,
+                expandedRowKeys,
+                expandIcon: () => null,
+              }}
+              style={{ marginTop: 16 }}
+            />
+          ) : (
+            <Empty
+              description={
+                <span>
+                  {activeFilters > 0
+                    ? "Không tìm thấy tin tuyển dụng nào phù hợp với bộ lọc"
+                    : "Chưa có tin tuyển dụng nào trong hệ thống"}
+                </span>
+              }
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              style={{ margin: "48px 0" }}
+            />
+          )}
+        </Card>
+      )}
 
       {/* Modal xác nhận xóa */}
       <Modal
@@ -788,154 +830,162 @@ const JobPost = () => {
           </Space>
         }
       >
-        {selectedJob && (
-          <>
-            <Flex align="center" gap="middle" style={{ marginBottom: 24 }}>
-              <Avatar src={selectedJob.company?.companyImageUrl} size={80} shape="square" />
-              <Flex vertical>
-                <Title level={4} style={{ margin: 0 }}>
-                  {selectedJob.jobName}
-                </Title>
-                <Text>{selectedJob.company?.companyName}</Text>
-                <Space style={{ marginTop: 8 }}>
-                  {selectedJob.isHot && (
-                    <Tag icon={<FireOutlined />} color="volcano">
-                      Hot
+        {detailLoading ? (
+          <div style={{ padding: 24 }}>
+            <Skeleton active avatar paragraph={{ rows: 6 }} />
+            <Divider />
+            <Skeleton active paragraph={{ rows: 8 }} />
+          </div>
+        ) : (
+          selectedJob && (
+            <>
+              <Flex align="center" gap="middle" style={{ marginBottom: 24 }}>
+                <Avatar src={selectedJob.company?.companyImageUrl} size={80} shape="square" />
+                <Flex vertical>
+                  <Title level={4} style={{ margin: 0 }}>
+                    {selectedJob.jobName}
+                  </Title>
+                  <Text>{selectedJob.company?.companyName}</Text>
+                  <Space style={{ marginTop: 8 }}>
+                    {selectedJob.isHot && (
+                      <Tag icon={<FireOutlined />} color="volcano">
+                        Hot
+                      </Tag>
+                    )}
+                    {selectedJob.isUrgent && (
+                      <Tag icon={<ClockCircleOutlined />} color="error">
+                        Gấp
+                      </Tag>
+                    )}
+                    <Tag icon={<UserOutlined />}>{selectedJob.quantity} người</Tag>
+                    <Tag icon={getWorkplaceTypeLabel(selectedJob.typeOfWorkplace).icon}>
+                      {getWorkplaceTypeLabel(selectedJob.typeOfWorkplace).label}
                     </Tag>
-                  )}
-                  {selectedJob.isUrgent && (
-                    <Tag icon={<ClockCircleOutlined />} color="error">
-                      Gấp
-                    </Tag>
-                  )}
-                  <Tag icon={<UserOutlined />}>{selectedJob.quantity} người</Tag>
-                  <Tag icon={getWorkplaceTypeLabel(selectedJob.typeOfWorkplace).icon}>
-                    {getWorkplaceTypeLabel(selectedJob.typeOfWorkplace).label}
-                  </Tag>
-                </Space>
+                  </Space>
+                </Flex>
               </Flex>
-            </Flex>
 
-            <Tabs defaultActiveKey="1">
-              <TabPane tab="Thông tin cơ bản" key="1">
-                <Row gutter={[24, 24]}>
-                  <Col span={12}>
-                    <Card title="Thông tin chung" bordered={false}>
-                      <Flex vertical gap="middle">
-                        <Flex justify="space-between">
-                          <Text strong>Mức lương:</Text>
-                          <Text>
-                            {formatCurrency(selectedJob.salaryMin)} - {formatCurrency(selectedJob.salaryMax)}
-                          </Text>
-                        </Flex>
-                        <Flex justify="space-between">
-                          <Text strong>Vị trí:</Text>
-                          <Text>{getPositionLabel(selectedJob.position)}</Text>
-                        </Flex>
-                        <Flex justify="space-between">
-                          <Text strong>Kinh nghiệm:</Text>
-                          <Text>{selectedJob.experience} năm</Text>
-                        </Flex>
-                        <Flex justify="space-between">
-                          <Text strong>Học vấn:</Text>
-                          <Text>{getAcademicLevelLabel(selectedJob.academicLevel)}</Text>
-                        </Flex>
-                        <Flex justify="space-between">
-                          <Text strong>Loại công việc:</Text>
-                          <Text>{getJobTypeLabel(selectedJob.jobType)}</Text>
-                        </Flex>
-                        <Flex justify="space-between">
-                          <Text strong>Giới tính yêu cầu:</Text>
-                          <Text>
-                            {selectedJob.genderRequired === "M"
-                              ? "Nam"
-                              : selectedJob.genderRequired === "F"
-                                ? "Nữ"
-                                : "Không yêu cầu"}
-                          </Text>
-                        </Flex>
-                      </Flex>
-                    </Card>
-                  </Col>
-                  <Col span={12}>
-                    <Card title="Thời gian" bordered={false}>
-                      <Flex vertical gap="middle">
-                        <Flex justify="space-between">
-                          <Text strong>Hạn nộp hồ sơ:</Text>
-                          <Text>{dayjs(selectedJob.deadline).format("DD/MM/YYYY")}</Text>
-                        </Flex>
-                        <Flex justify="space-between">
-                          <Text strong>Trạng thái:</Text>
-                          <Tag color={selectedJob.isExpired ? "error" : "success"}>
-                            {selectedJob.isExpired ? "Đã hết hạn" : "Còn hạn"}
-                          </Tag>
-                        </Flex>
-                        <Flex justify="space-between">
-                          <Text strong>Ngày tạo:</Text>
-                          <Text>{dayjs(selectedJob.createAt).format("DD/MM/YYYY HH:mm")}</Text>
-                        </Flex>
-                        <Flex justify="space-between">
-                          <Text strong>Cập nhật lần cuối:</Text>
-                          <Text>{dayjs(selectedJob.updateAt).format("DD/MM/YYYY HH:mm")}</Text>
-                        </Flex>
-                      </Flex>
-                    </Card>
-                  </Col>
-                  <Col span={24}>
-                    <Card title="Thông tin liên hệ" bordered={false}>
-                      <Row gutter={24}>
-                        <Col span={8}>
-                          <Flex vertical gap="small">
-                            <Text strong>Người liên hệ:</Text>
-                            <Text>{selectedJob.contactPersonName}</Text>
+              <Tabs defaultActiveKey="1">
+                <TabPane tab="Thông tin cơ bản" key="1">
+                  <Row gutter={[24, 24]}>
+                    <Col span={12}>
+                      <Card title="Thông tin chung" bordered={false}>
+                        <Flex vertical gap="middle">
+                          <Flex justify="space-between">
+                            <Text strong>Mức lương:</Text>
+                            <Text>
+                              {formatCurrency(selectedJob.salaryMin)} - {formatCurrency(selectedJob.salaryMax)}
+                            </Text>
                           </Flex>
-                        </Col>
-                        <Col span={8}>
-                          <Flex vertical gap="small">
-                            <Text strong>Email:</Text>
-                            <Text>{selectedJob.contactPersonEmail}</Text>
+                          <Flex justify="space-between">
+                            <Text strong>Vị trí:</Text>
+                            <Text>{getPositionLabel(selectedJob.position)}</Text>
                           </Flex>
-                        </Col>
-                        <Col span={8}>
-                          <Flex vertical gap="small">
-                            <Text strong>Điện thoại:</Text>
-                            <Text>{selectedJob.contactPersonPhone}</Text>
+                          <Flex justify="space-between">
+                            <Text strong>Kinh nghiệm:</Text>
+                            <Text>{selectedJob.experience} năm</Text>
                           </Flex>
-                        </Col>
-                      </Row>
-                    </Card>
-                  </Col>
-                  <Col span={24}>
-                    <Card title="Thống kê" bordered={false}>
-                      <Row gutter={24}>
-                        <Col span={12}>
-                          <Statistic title="Lượt xem" value={selectedJob.views} prefix={<EyeOutlined />} />
-                        </Col>
-                        <Col span={12}>
-                          <Statistic title="Lượt chia sẻ" value={selectedJob.shares} prefix={<ShareAltOutlined />} />
-                        </Col>
-                      </Row>
-                    </Card>
-                  </Col>
-                </Row>
-              </TabPane>
-              <TabPane tab="Mô tả công việc" key="2">
-                <Card bordered={false}>
-                  <div dangerouslySetInnerHTML={{ __html: selectedJob.jobDescription }} />
-                </Card>
-              </TabPane>
-              <TabPane tab="Yêu cầu công việc" key="3">
-                <Card bordered={false}>
-                  <div dangerouslySetInnerHTML={{ __html: selectedJob.jobRequirement }} />
-                </Card>
-              </TabPane>
-              <TabPane tab="Quyền lợi" key="4">
-                <Card bordered={false}>
-                  <div dangerouslySetInnerHTML={{ __html: selectedJob.benefitsEnjoyed }} />
-                </Card>
-              </TabPane>
-            </Tabs>
-          </>
+                          <Flex justify="space-between">
+                            <Text strong>Học vấn:</Text>
+                            <Text>{getAcademicLevelLabel(selectedJob.academicLevel)}</Text>
+                          </Flex>
+                          <Flex justify="space-between">
+                            <Text strong>Loại công việc:</Text>
+                            <Text>{getJobTypeLabel(selectedJob.jobType)}</Text>
+                          </Flex>
+                          <Flex justify="space-between">
+                            <Text strong>Giới tính yêu cầu:</Text>
+                            <Text>
+                              {selectedJob.genderRequired === "M"
+                                ? "Nam"
+                                : selectedJob.genderRequired === "F"
+                                  ? "Nữ"
+                                  : "Không yêu cầu"}
+                            </Text>
+                          </Flex>
+                        </Flex>
+                      </Card>
+                    </Col>
+                    <Col span={12}>
+                      <Card title="Thời gian" bordered={false}>
+                        <Flex vertical gap="middle">
+                          <Flex justify="space-between">
+                            <Text strong>Hạn nộp hồ sơ:</Text>
+                            <Text>{dayjs(selectedJob.deadline).format("DD/MM/YYYY")}</Text>
+                          </Flex>
+                          <Flex justify="space-between">
+                            <Text strong>Trạng thái:</Text>
+                            <Tag color={selectedJob.isExpired ? "error" : "success"}>
+                              {selectedJob.isExpired ? "Đã hết hạn" : "Còn hạn"}
+                            </Tag>
+                          </Flex>
+                          <Flex justify="space-between">
+                            <Text strong>Ngày tạo:</Text>
+                            <Text>{dayjs(selectedJob.createAt).format("DD/MM/YYYY HH:mm")}</Text>
+                          </Flex>
+                          <Flex justify="space-between">
+                            <Text strong>Cập nhật lần cuối:</Text>
+                            <Text>{dayjs(selectedJob.updateAt).format("DD/MM/YYYY HH:mm")}</Text>
+                          </Flex>
+                        </Flex>
+                      </Card>
+                    </Col>
+                    <Col span={24}>
+                      <Card title="Thông tin liên hệ" bordered={false}>
+                        <Row gutter={24}>
+                          <Col span={8}>
+                            <Flex vertical gap="small">
+                              <Text strong>Người liên hệ:</Text>
+                              <Text>{selectedJob.contactPersonName}</Text>
+                            </Flex>
+                          </Col>
+                          <Col span={8}>
+                            <Flex vertical gap="small">
+                              <Text strong>Email:</Text>
+                              <Text>{selectedJob.contactPersonEmail}</Text>
+                            </Flex>
+                          </Col>
+                          <Col span={8}>
+                            <Flex vertical gap="small">
+                              <Text strong>Điện thoại:</Text>
+                              <Text>{selectedJob.contactPersonPhone}</Text>
+                            </Flex>
+                          </Col>
+                        </Row>
+                      </Card>
+                    </Col>
+                    <Col span={24}>
+                      <Card title="Thống kê" bordered={false}>
+                        <Row gutter={24}>
+                          <Col span={12}>
+                            <Statistic title="Lượt xem" value={selectedJob.views} prefix={<EyeOutlined />} />
+                          </Col>
+                          <Col span={12}>
+                            <Statistic title="Lượt chia sẻ" value={selectedJob.shares} prefix={<ShareAltOutlined />} />
+                          </Col>
+                        </Row>
+                      </Card>
+                    </Col>
+                  </Row>
+                </TabPane>
+                <TabPane tab="Mô tả công việc" key="2">
+                  <Card bordered={false}>
+                    <div dangerouslySetInnerHTML={{ __html: selectedJob.jobDescription }} />
+                  </Card>
+                </TabPane>
+                <TabPane tab="Yêu cầu công việc" key="3">
+                  <Card bordered={false}>
+                    <div dangerouslySetInnerHTML={{ __html: selectedJob.jobRequirement }} />
+                  </Card>
+                </TabPane>
+                <TabPane tab="Quyền lợi" key="4">
+                  <Card bordered={false}>
+                    <div dangerouslySetInnerHTML={{ __html: selectedJob.benefitsEnjoyed }} />
+                  </Card>
+                </TabPane>
+              </Tabs>
+            </>
+          )
         )}
       </Drawer>
 
@@ -1079,8 +1129,7 @@ const JobPost = () => {
         .ant-table-row-expand-icon-cell {
           width: 0;
           padding: 0 !important;
-        }import jobService from './../../services/jobService';
-
+        }
         
         .ant-table-thead > tr > th {
           background-color: #fafafa;
@@ -1093,6 +1142,22 @@ const JobPost = () => {
         
         .ant-statistic-title {
           font-size: 14px;
+        }
+        
+        .loading-spinner {
+          display: inline-block;
+          width: 50px;
+          height: 50px;
+          border: 3px solid rgba(0, 0, 0, 0.1);
+          border-radius: 50%;
+          border-top-color: #1890ff;
+          animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+          to {
+            transform: rotate(360deg);
+          }
         }
       `}</style>
     </div>

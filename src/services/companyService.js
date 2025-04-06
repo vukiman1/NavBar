@@ -12,8 +12,12 @@ const companyService = {
     },
 
     deleteCompany: async (id) => {
-        const url = `company/web/admin/company/${id}`;
+        const url = `info/admin/company/${id}`;
         return httpRequest.delete(url);
+    },
+    returnCompany: async (id) => {
+        const url = `info/admin/company/${id}`;
+        return httpRequest.patch(url);
     },
 
     getCompanyDetails(id) {

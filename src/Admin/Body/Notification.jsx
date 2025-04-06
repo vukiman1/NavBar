@@ -71,8 +71,8 @@ function Notification() {
 
   // Load notifications from API
   const loadNotifications = async () => {
-    setLoading(true)
     try {
+      setLoading(true)
       const resData = await webService.getAllNotification()
       const data = await fetchNotifications()
       // console.log(resData.data)

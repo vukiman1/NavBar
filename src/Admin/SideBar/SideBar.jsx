@@ -25,7 +25,7 @@ const SideBar = () => {
       key: "1",
       icon: <PieChartOutlined />,
       label: "Dashboard",
-      children: [{ key: "11", label: <NavLink to="/">Trang chủ</NavLink> },
+      children: [{ key: "11", label: <NavLink to="/home">Trang chủ</NavLink> },
         { key: "111", label: <NavLink to="/notification">Thông báo</NavLink> }
       ],
     },

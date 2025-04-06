@@ -103,8 +103,8 @@ const Users = () => {
   }, [refreshKey])
 
   const loadUserList = async () => {
-    setTableLoading(true)
     try {
+      setTableLoading(true)
       const resData = await userService.getUserList()
       setUserList(resData.data)
 

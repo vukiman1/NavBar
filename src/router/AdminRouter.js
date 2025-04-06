@@ -78,6 +78,7 @@ const AdminRouter = () => {
       <Route path="/setting" element={<Setting />} />
 
       {/* Other routes */}
+      <Route path="/home" element={<Home />} />
       <Route path="/" element={<Home />} />
       <Route path="/info" element={<UserInfo />} />
     </Routes>

@@ -450,7 +450,33 @@ const EditUser = () => {
                           <CloseCircleOutlined /> Chưa xác thực
                         </>
                       }
-                      disabled
+
+                      className="status-switch"
+                    />
+                  </Form.Item>
+
+                  
+                </Col>
+                <Col xs={12} md={8}>
+                      
+                <Form.Item
+                    label="Đặt làm quản trị viên"
+                    name="isSupperuser"
+                    valuePropName="checked"
+                    tooltip="Cho phép người dùng này trở thành quản trị viên"
+                  >
+                    <Switch
+                      checkedChildren={
+                        <>
+                          <CheckCircleOutlined /> Bật
+                        </>
+                      }
+                      unCheckedChildren={
+                        <>
+                          <CloseCircleOutlined /> Tắt
+                        </>
+                      }
+
                       className="status-switch"
                     />
                   </Form.Item>

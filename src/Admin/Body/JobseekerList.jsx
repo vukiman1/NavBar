@@ -27,7 +27,6 @@ import {
   EyeOutlined,
   StarOutlined,
   StarFilled,
-  UserOutlined,
   DollarOutlined,
   CalendarOutlined,
   ExperimentOutlined,
@@ -37,6 +36,7 @@ import {
 } from "@ant-design/icons"
 import moment from "moment"
 import "moment/locale/vi"
+import jobService from "../../services/jobService"
 
 const { Title, Text } = Typography
 const { Option } = Select
@@ -76,6 +76,7 @@ const getResumeTypeBadge = (type) => {
 const JobseekerList = () => {
   const [jobseekerList, setJobseekerList] = useState([])
   const [tableLoading, setTableLoading] = useState(false)
+  const [pageLoading, setPageLoading] = useState(true)
   const [totalCount, setTotalCount] = useState(0)
   const [filterDrawerVisible, setFilterDrawerVisible] = useState(false)
   const [activeFilters, setActiveFilters] = useState(0)
@@ -99,8 +100,8 @@ const JobseekerList = () => {
   })
 
   const loadJobseekerList = async () => {
-    setTableLoading(true)
     try {
+      setTableLoading(true)
       const params = {
         search: searchText || undefined,
         industry: industry || undefined,
@@ -117,186 +118,7 @@ const JobseekerList = () => {
       }
 
       // For demo purposes, we'll use the provided data
-      const mockData = {
-        errors: {},
-        data: {
-          count: 17,
-          results: [
-            {
-              id: 4,
-              slug: "resume-3",
-              title: "QA",
-              salaryMin: 7000000,
-              salaryMax: 9000000,
-              experience: 2,
-              updateAt: "2025-03-16T09:21:27.166Z",
-              city: 24,
-              isSaved: false,
-              viewEmployerNumber: 0,
-              userDict: {
-                id: 6,
-                fullName: "Phương ",
-              },
-              jobSeekerProfileDict: {
-                id: 4,
-                old: 23,
-              },
-              type: "WEBSITE",
-            },
-            {
-              id: 1,
-              slug: "resume",
-              title: "Backend Nodejs",
-              salaryMin: 9000000,
-              salaryMax: 10000000,
-              experience: 3,
-              updateAt: "2025-03-04T09:24:17.077Z",
-              city: 24,
-              isSaved: false,
-              viewEmployerNumber: 0,
-              userDict: {
-                id: 1,
-                fullName: "Kim An",
-              },
-              jobSeekerProfileDict: {
-                id: 1,
-                old: 23,
-              },
-              type: "WEBSITE",
-            },
-            {
-              id: 9,
-              slug: "resume-8",
-              title: "QA",
-              salaryMin: 8000000,
-              salaryMax: 10000000,
-              experience: 2,
-              updateAt: "2025-03-16T09:20:40.864Z",
-              city: 24,
-              isSaved: true,
-              viewEmployerNumber: 1,
-              userDict: {
-                id: 6,
-                fullName: "Phương ",
-              },
-              jobSeekerProfileDict: {
-                id: 4,
-                old: 23,
-              },
-              type: "UPLOAD",
-            },
-            {
-              id: 7,
-              slug: "resume-6",
-              title: null,
-              salaryMin: 0,
-              salaryMax: 0,
-              experience: null,
-              updateAt: "2025-03-08T10:11:34.620Z",
-              city: null,
-              isSaved: false,
-              viewEmployerNumber: 0,
-              userDict: {
-                id: 9,
-                fullName: "Phương Mai",
-              },
-              jobSeekerProfileDict: {
-                id: 7,
-                old: null,
-              },
-              type: "WEBSITE",
-            },
-            {
-              id: 10,
-              slug: "resume-9",
-              title: null,
-              salaryMin: 0,
-              salaryMax: 0,
-              experience: null,
-              updateAt: "2025-03-08T17:30:09.749Z",
-              city: null,
-              isSaved: false,
-              viewEmployerNumber: 0,
-              userDict: {
-                id: 11,
-                fullName: "Nguyen Thi Linh Anh",
-              },
-              jobSeekerProfileDict: {
-                id: 9,
-                old: null,
-              },
-              type: "WEBSITE",
-            },
-            {
-              id: 2,
-              slug: "resume-1",
-              title: null,
-              salaryMin: 0,
-              salaryMax: 0,
-              experience: null,
-              updateAt: "2025-03-05T16:43:22.451Z",
-              city: null,
-              isSaved: false,
-              viewEmployerNumber: 0,
-              userDict: {
-                id: 3,
-                fullName: "Vũ Kim An",
-              },
-              jobSeekerProfileDict: {
-                id: 2,
-                old: null,
-              },
-              type: "WEBSITE",
-            },
-            {
-              id: 5,
-              slug: "resume-4",
-              title: null,
-              salaryMin: 0,
-              salaryMax: 0,
-              experience: null,
-              updateAt: "2025-03-08T09:58:22.960Z",
-              city: null,
-              isSaved: false,
-              viewEmployerNumber: 0,
-              userDict: {
-                id: 7,
-                fullName: "         ",
-              },
-              jobSeekerProfileDict: {
-                id: 5,
-                old: null,
-              },
-              type: "WEBSITE",
-            },
-            {
-              id: 8,
-              slug: "resume-7",
-              title: null,
-              salaryMin: 0,
-              salaryMax: 0,
-              experience: null,
-              updateAt: "2025-03-08T11:31:56.911Z",
-              city: null,
-              isSaved: false,
-              viewEmployerNumber: 0,
-              userDict: {
-                id: 10,
-                fullName: "Nguyen Thi Linh Anh",
-              },
-              jobSeekerProfileDict: {
-                id: 8,
-                old: null,
-              },
-              type: "WEBSITE",
-            },
-          ],
-        },
-      }
-
-      // In a real application, you would use the API call:
-      // const resData = await jobService.getAllJobseekers(params);
-      const resData = mockData
+      const resData = await jobService.getAllJobseekers(params)
 
       setJobseekerList(resData.data.results)
       setTotalCount(resData.data.count)
@@ -319,6 +141,7 @@ const JobseekerList = () => {
       message.error("Không thể tải danh sách người tìm việc")
     } finally {
       setTableLoading(false)
+      setPageLoading(false)
     }
   }
 
@@ -338,6 +161,8 @@ const JobseekerList = () => {
     pagination.current,
     pagination.pageSize,
   ])
+
+
 
   const handleTableChange = (pagination) => {
     setPagination(pagination)
@@ -393,7 +218,7 @@ const JobseekerList = () => {
       key: "candidate",
       render: (_, record) => (
         <Flex align="center" gap="middle">
-          <Avatar size={50} icon={<UserOutlined />} style={{ backgroundColor: "#1890ff" }} />
+          <Avatar size={50} src={record.userDict?.avatarUrl} />
           <Flex vertical>
             <Text strong>{record.userDict?.fullName || "Chưa cập nhật"}</Text>
             <Text type="secondary">
@@ -476,119 +301,143 @@ const JobseekerList = () => {
 
   return (
     <div style={{ padding: "24px", backgroundColor: "#f0f2f5", minHeight: "100vh" }}>
-      <Card
-        bordered={false}
-        style={{
-          borderRadius: 8,
-          boxShadow: "0 1px 2px rgba(0, 0, 0, 0.03), 0 1px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px rgba(0, 0, 0, 0.02)",
-        }}
-      >
-        {/* Header */}
-        <Flex align="center" justify="space-between" style={{ marginBottom: 24 }}>
-          <Title level={3} style={{ margin: 0 }}>
-            Danh sách người tìm việc
-          </Title>
-          <Space>
-            <Statistic
-              title="Tổng số hồ sơ"
-              value={totalCount}
-              prefix={<FileTextOutlined />}
-              style={{ marginRight: 24 }}
-            />
-            {activeFilters > 0 && (
-              <Badge count={activeFilters} offset={[0, 0]}>
-                <Tag color="blue" style={{ padding: "6px 8px" }}>
-                  Đang áp dụng {activeFilters} bộ lọc
-                </Tag>
-              </Badge>
-            )}
-          </Space>
-        </Flex>
+      {pageLoading ? (
+        <Card
+          bordered={false}
+          style={{
+            borderRadius: 8,
+            boxShadow:
+              "0 1px 2px rgba(0, 0, 0, 0.03), 0 1px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px rgba(0, 0, 0, 0.02)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            minHeight: "60vh",
+          }}
+        >
+          <Flex vertical align="center" gap="middle">
+            <div className="loading-spinner"></div>
+            <Text>Đang tải danh sách người tìm việc...</Text>
+          </Flex>
+        </Card>
+      ) : (
+        <Card
+          bordered={false}
+          style={{
+            borderRadius: 8,
+            boxShadow:
+              "0 1px 2px rgba(0, 0, 0, 0.03), 0 1px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px rgba(0, 0, 0, 0.02)",
+          }}
+        >
+          {/* Rest of your component content */}
+          {/* Header */}
+          <Flex align="center" justify="space-between" style={{ marginBottom: 24 }}>
+            <Title level={3} style={{ margin: 0 }}>
+              Danh sách người tìm việc
+            </Title>
+            <Space>
+              <Statistic
+                title="Tổng số hồ sơ"
+                value={totalCount}
+                prefix={<FileTextOutlined />}
+                style={{ marginRight: 24 }}
+              />
+              {activeFilters > 0 && (
+                <Badge count={activeFilters} offset={[0, 0]}>
+                  <Tag color="blue" style={{ padding: "6px 8px" }}>
+                    Đang áp dụng {activeFilters} bộ lọc
+                  </Tag>
+                </Badge>
+              )}
+            </Space>
+          </Flex>
 
-        <Divider style={{ margin: "12px 0 24px" }} />
+          <Divider style={{ margin: "12px 0 24px" }} />
 
-        {/* Thanh tìm kiếm và bộ lọc */}
-        <Flex justify="space-between" align="center" style={{ marginBottom: 24 }}>
-          <Space size="middle">
-            <Input.Search
-              placeholder="Tìm kiếm theo tên, vị trí..."
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              style={{ width: 300 }}
-              allowClear
-              enterButton
-            />
+          {/* Thanh tìm kiếm và bộ lọc */}
+          <Flex justify="space-between" align="center" style={{ marginBottom: 24 }}>
+            <Space size="middle">
+              <Input.Search
+                placeholder="Tìm kiếm theo tên, vị trí..."
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                style={{ width: 300 }}
+                allowClear
+                enterButton
+              />
 
-            <Select placeholder="Thành phố" allowClear onChange={setCity} value={city} style={{ width: 180 }}>
-              {cityOptions.map((option) => (
-                <Option key={option.value} value={option.value}>
-                  {option.label}
-                </Option>
-              ))}
-            </Select>
+              <Select placeholder="Thành phố" allowClear onChange={setCity} value={city} style={{ width: 180 }}>
+                {cityOptions.map((option) => (
+                  <Option key={option.value} value={option.value}>
+                    {option.label}
+                  </Option>
+                ))}
+              </Select>
 
-            <Select
-              placeholder="Kinh nghiệm"
-              allowClear
-              onChange={setExperience}
-              value={experience}
-              style={{ width: 180 }}
-            >
-              <Option value="0">Chưa có kinh nghiệm</Option>
-              <Option value="1">1 năm</Option>
-              <Option value="2">2 năm</Option>
-              <Option value="3">3 năm</Option>
-              <Option value="5">Trên 5 năm</Option>
-            </Select>
-          </Space>
+              <Select
+                placeholder="Kinh nghiệm"
+                allowClear
+                onChange={setExperience}
+                value={experience}
+                style={{ width: 180 }}
+              >
+                <Option value="0">Chưa có kinh nghiệm</Option>
+                <Option value="1">1 năm</Option>
+                <Option value="2">2 năm</Option>
+                <Option value="3">3 năm</Option>
+                <Option value="5">Trên 5 năm</Option>
+              </Select>
+            </Space>
 
-          <Space>
-            <Button
-              icon={<FilterOutlined />}
-              onClick={() => setFilterDrawerVisible(true)}
-              type={activeFilters > 0 ? "primary" : "default"}
-            >
-              Bộ lọc nâng cao
-            </Button>
-
-            {activeFilters > 0 && (
-              <Button icon={<ReloadOutlined />} onClick={resetFilters}>
-                Xóa bộ lọc
+            <Space>
+              <Button
+                icon={<FilterOutlined />}
+                onClick={() => setFilterDrawerVisible(true)}
+                type={activeFilters > 0 ? "primary" : "default"}
+              >
+                Bộ lọc nâng cao
               </Button>
-            )}
-          </Space>
-        </Flex>
 
-        {/* Bảng dữ liệu */}
-        {jobseekerList.length > 0 ? (
-          <Table
-            loading={tableLoading}
-            dataSource={jobseekerList}
-            columns={columns}
-            rowKey="id"
-            pagination={{
-              ...pagination,
-              total: totalCount,
-              showSizeChanger: true,
-              showTotal: (total) => `Tổng cộng ${total} người tìm việc`,
-              pageSizeOptions: ["10", "20", "50"],
-            }}
-            onChange={handleTableChange}
-            rowClassName={(record) => (record.isSaved ? "saved-resume-row" : "")}
-            style={{ marginTop: 16 }}
-          />
-        ) : (
-          <Empty
-            description={
-              <span>
-                {activeFilters > 0 ? "Không tìm thấy hồ sơ nào phù hợp với bộ lọc" : "Chưa có hồ sơ nào trong hệ thống"}
-              </span>
-            }
-            image={Empty.PRESENTED_IMAGE_SIMPLE}
-            style={{ margin: "48px 0" }}
-          />
-        )}
-      </Card>
+              {activeFilters > 0 && (
+                <Button icon={<ReloadOutlined />} onClick={resetFilters}>
+                  Xóa bộ lọc
+                </Button>
+              )}
+            </Space>
+          </Flex>
+
+          {/* Bảng dữ liệu */}
+          {jobseekerList.length > 0 ? (
+            <Table
+              loading={tableLoading}
+              dataSource={jobseekerList}
+              columns={columns}
+              rowKey="id"
+              pagination={{
+                ...pagination,
+                total: totalCount,
+                showSizeChanger: true,
+                showTotal: (total) => `Tổng cộng ${total} người tìm việc`,
+                pageSizeOptions: ["10", "20", "50"],
+              }}
+              onChange={handleTableChange}
+              rowClassName={(record) => (record.isSaved ? "saved-resume-row" : "")}
+              style={{ marginTop: 16 }}
+            />
+          ) : (
+            <Empty
+              description={
+                <span>
+                  {activeFilters > 0
+                    ? "Không tìm thấy hồ sơ nào phù hợp với bộ lọc"
+                    : "Chưa có hồ sơ nào trong hệ thống"}
+                </span>
+              }
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              style={{ margin: "48px 0" }}
+            />
+          )}
+        </Card>
+      )}
 
       {/* Drawer bộ lọc nâng cao */}
       <Drawer
@@ -751,6 +600,22 @@ const JobseekerList = () => {
         .ant-table-thead > tr > th {
           background-color: #fafafa;
           font-weight: 600;
+        }
+        
+        .loading-spinner {
+          display: inline-block;
+          width: 50px;
+          height: 50px;
+          border: 3px solid rgba(0, 0, 0, 0.1);
+          border-radius: 50%;
+          border-top-color: #1890ff;
+          animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+          to {
+            transform: rotate(360deg);
+          }
         }
       `}</style>
     </div>
