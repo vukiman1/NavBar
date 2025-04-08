@@ -122,11 +122,8 @@ const Company = () => {
 
   useEffect(() => {
     // Set a timeout to simulate initial loading
-    const timer = setTimeout(() => {
-      loadCompanyList()
-    }, 1000)
+    loadCompanyList()
 
-    return () => clearTimeout(timer)
   }, [])
 
   // Xử lý tìm kiếm & bộ lọc
@@ -564,11 +561,11 @@ const Company = () => {
                   </Button>
                 )}
 
-                <Link to="/company/add">
+                {/* <Link to="/company/add">
                   <Button type="primary" icon={<PlusOutlined />} style={{ borderRadius: 6 }}>
                     Thêm công ty mới
                   </Button>
-                </Link>
+                </Link> */}
               </Space>
             </Flex>
           </Card>

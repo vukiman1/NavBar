@@ -278,7 +278,7 @@ const JobseekerList = () => {
               Xem hồ sơ
             </Button>
           </Tooltip>
-          <Tooltip title={record.isSaved ? "Bỏ lưu hồ sơ" : "Lưu hồ sơ"}>
+          {/* <Tooltip title={record.isSaved ? "Bỏ lưu hồ sơ" : "Lưu hồ sơ"}>
             <Button
               type={record.isSaved ? "default" : "text"}
               icon={record.isSaved ? <StarFilled style={{ color: "#faad14" }} /> : <StarOutlined />}
@@ -286,7 +286,7 @@ const JobseekerList = () => {
             >
               {record.isSaved ? "Đã lưu" : "Lưu"}
             </Button>
-          </Tooltip>
+          </Tooltip> */}
         </Space>
       ),
       width: "25%",

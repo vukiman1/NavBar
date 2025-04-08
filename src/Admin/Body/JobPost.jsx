@@ -747,11 +747,11 @@ const JobPost = () => {
                 </Button>
               )}
 
-              <Link to="/job-post/create">
+              {/* <Link to="/job-post/create">
                 <Button type="primary" icon={<PlusOutlined />}>
                   Thêm tin mới
                 </Button>
-              </Link>
+              </Link> */}
             </Space>
           </Flex>
 
