@@ -46,7 +46,7 @@ const Login = () => {
 
       // Redirect to dashboard
       setTimeout(() => {
-        navigate("/")
+        navigate("/home")
       }, 500)
     } catch (err) {
       console.error("Login error:", err)
